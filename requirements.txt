@@ -1,0 +1,5 @@
+bs4==0.0.1
+Flask==2.1.1
+Flask-Cors==3.0.10
+html5lib==1.1
+uWSGI==2.0.20
