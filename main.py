@@ -23,7 +23,7 @@ api_endpoint = 'https://api.visual-essays.net'
 
 # Github settings for site content
 gh_acct = 'visual-essays'
-gh_repo = 'web-app'
+gh_repo = 'content'
 
 def _add_link(soup, href, attrs=None):
   link = soup.new_tag('link')
