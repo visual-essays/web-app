@@ -33,8 +33,7 @@ def _add_link(soup, href, attrs=None):
 def _set_css(soup):
   # Remove default stylesheets
   # for el in soup.find_all('link', {'rel':'stylesheet'}):
-  #  if el.attrs['href'].startswith('https://visual-essays.net/static/css'):
-  #    el.decompose()
+  #  if 'visual-essays' in el.attrs['href']: el.decompose()
   # Add custom stylesheet
   _add_link(soup, '/static/css/custom.css', {'rel':'stylesheet'})
 
