@@ -1,0 +1,152 @@
+
+ve-image, ve-entities, .section1, .float-right, .float-left {
+  clear: both;
+}
+
+ve-image {
+  width: 50%;
+}
+
+ve-image {
+  float: right;
+  margin: 0 0 30px 18px;
+  border: 1px solid #ddd;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+}
+
+ve-image-grid ul {
+  display: none;
+}
+
+.float-right {
+  float: right;
+  margin: 0 0 12px 18px;
+}
+  
+.float-left {
+  float: right;
+  margin: 0 12px 18px 0;
+}
+
+/*
+ve-header {
+  height: 300px;
+}
+
+ve-header.sticky {
+  position: sticky;
+  top: -164;
+  z-index: 1000;
+}
+
+ve-header {
+  margin-left: -1.1em;
+  margin-top: -1.1em;
+  width: calc(100% + 2.2em)
+}
+
+ve-header img {
+  display: none;
+}
+*/
+
+.clearfix {
+  clear: both;
+}
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+mark {
+  cursor: pointer;
+}
+
+/************ Text clamping ***********/
+.clamp input, .clamp-2 input, .clamp-5 input, .clamp-10 input, .clamp-15 input, .clamp-20 input,
+.clamp label, .clamp-2 label, .clamp-5 label, .clamp-10 label, .clamp-15 label, .clamp-20 label {
+  display: unset;
+}
+
+.clamp input, .clamp-2 input, .clamp-5 input, .clamp-10 input, .clamp-15 input, .clamp-20 input {
+  display: none;
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+}
+.clamp .clamp-wrapper,
+.clamp-2 .clamp-wrapper,
+.clamp-5 .clamp-wrapper,
+.clamp-10 .clamp-wrapper,
+.clamp-15 .clamp-wrapper,
+.clamp-20 .clamp-wrapper {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  /* margin-bottom: 6px; */
+}
+.clamp-2 .clamp-wrapper { -webkit-line-clamp: 2; }
+.clamp-5 .clamp-wrapper { -webkit-line-clamp: 5; }
+.clamp-10 .clamp-wrapper { -webkit-line-clamp: 10; }
+.clamp-15 .clamp-wrapper { -webkit-line-clamp: 15; }
+.clamp-20 .clamp-wrapper { -webkit-line-clamp: 20; }
+
+.clamp-wrapper p {
+  margin-block-start: 0;
+}
+
+.clamp input:focus ~ label,
+.clamp-2 input:focus ~ label,
+.clamp-5 input:focus ~ label,
+.clamp-10 input:focus ~ label,
+.clamp-15 input:focus ~ label,
+.clamp-20 input:focus ~ label {
+  outline: -webkit-focus-ring-color auto 5px;
+}
+.clamp input:checked + div,
+.clamp-2 input:checked + div,
+.clamp-5 input:checked + div,
+.clamp-10 input:checked + div,
+.clamp-15 input:checked + div,
+.clamp-20 input:checked + div {
+  -webkit-line-clamp: unset;
+}
+.clamp input:checked ~ label,
+.clamp-2 input:checked ~ label, 
+.clamp-5 input:checked ~ label, 
+.clamp-10 input:checked ~ label, 
+.clamp-15 input:checked ~ label, 
+.clamp-20 input:checked ~ label, 
+
+.clamp label,
+.clamp-2 label,
+.clamp-5 label,
+.clamp-10 label,
+.clamp-15 label,
+.clamp-20 label {
+  /*
+  ;border-radius: 4px;
+  padding: 0.2em 0.6em 0.3em 0.6em;
+  border: 1px solid #605C2A;
+  background-color: #605C2A;
+  color: #fff;
+  */
+  color: #337ab7;
+  font-size: 1em;
+  cursor: pointer;
+}
+.clamp label:hover,
+.clamp-2 label:hover,
+.clamp-5 label:hover,
+.clamp-10 label:hover,
+.clamp-15 label:hover,
+.clamp-20 label:hover {
+  text-decoration: underline;
+}
+
+.clamp-wrapper:not(.truncated) ~ label { display: none; }
+.clamp-wrapper >>> p {
+  margin-bottom: 0;
+}
+/************ End text clamping ***********/

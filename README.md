@@ -1,2 +1,1 @@
-# web-app
-Visual Essays Web App
+# Visual Essays Web App
