@@ -65,11 +65,11 @@ def render_html(path=None):
   base_url = f'/{"/".join(request.base_url.split("/")[3:])}'
   if base_url != '/' and not base_url.endswith('/'): base_url += '/'
   path = f'/{path}' if path else '/'
-  logger.info(f'render: api_endpoint={api_endpoint} base_url={base_url} \
-  acct={gh_acct} repo={gh_repo} path={path} elapsed={round(now()-start, 3)}')
   html = _get_html(path, base_url)
   # Uncomment the following statement to customize api-generated html
   # html = _customize_response(html)
+  logger.info(f'render: api_endpoint={api_endpoint} base_url={base_url} \
+  acct={gh_acct} repo={gh_repo} path={path} elapsed={round(now()-start, 3)}')
   return html
 
 if __name__ == '__main__':
