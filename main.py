@@ -21,9 +21,8 @@ CORS(app)
 
 api_endpoint = 'https://api.visual-essays.net'
 
-# Github settings for site content
-gh_acct = 'visual-essays'
-gh_repo = 'content'
+# Prefix for site content
+prefix = 'visual-essays/content'
 
 def _add_link(soup, href, attrs=None):
   link = soup.new_tag('link')
@@ -54,7 +53,7 @@ def _customize_response(html):
   return str(soup)
 
 def _get_html(path, base_url):
-  api_url = f'{api_endpoint}/html{path}?acct={gh_acct}&repo={gh_repo}&base={base_url}'
+  api_url = f'{api_endpoint}/html{path}?prefix={prefix}&base={base_url}'
   resp = requests.get(api_url)
   return resp.text if resp.status_code == 200 else ''
 
@@ -69,7 +68,7 @@ def render_html(path=None):
   # Uncomment the following statement to customize api-generated html
   # html = _customize_response(html)
   logger.info(f'render: api_endpoint={api_endpoint} base_url={base_url} \
-  acct={gh_acct} repo={gh_repo} path={path} elapsed={round(now()-start, 3)}')
+  prefix={prefix} path={path} elapsed={round(now()-start, 3)}')
   return html
 
 if __name__ == '__main__':
