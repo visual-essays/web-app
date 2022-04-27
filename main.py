@@ -20,6 +20,7 @@ app = Flask(__name__)
 CORS(app)
 
 api_endpoint = 'https://api.visual-essays.net'
+api_endpoint = 'http://localhost:8000'
 
 # Prefix for site content
 prefix = 'visual-essays/content'
@@ -42,14 +43,19 @@ def _set_favicon(soup):
   # Add custom favicon
   _add_link(soup, '/static/images/favicon.ico', {'rel':'icon'})
 
+def _add_default_footer(soup):
+  main = soup.find('main')
+  main.append(soup.new_tag('ve-footer'))
+
 def _customize_response(html):
   '''Perform any post-processing of API-generated HTML.'''
   # parse API-generated HTML with BeautifulSoup
   #   https://beautiful-soup-4.readthedocs.io/en/latest/
   soup = BeautifulSoup(html, 'html5lib')
   # perform custom updates to api-generated html
-  _set_css(soup)
-  _set_favicon(soup)
+  # _set_css(soup)
+  # _set_favicon(soup)
+  _add_default_footer(soup)
   return str(soup)
 
 def _get_html(path, base_url):
@@ -65,8 +71,7 @@ def render_html(path=None):
   if base_url != '/' and not base_url.endswith('/'): base_url += '/'
   path = f'/{path}' if path else '/'
   html = _get_html(path, base_url)
-  # Uncomment the following statement to customize api-generated html
-  # html = _customize_response(html)
+  html = _customize_response(html)
   logger.info(f'render: api_endpoint={api_endpoint} base_url={base_url} \
   prefix={prefix} path={path} elapsed={round(now()-start, 3)}')
   return html
