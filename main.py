@@ -20,7 +20,6 @@ app = Flask(__name__)
 CORS(app)
 
 api_endpoint = 'https://api.visual-essays.net'
-api_endpoint = 'http://localhost:8000'
 
 # Prefix for site content
 prefix = 'visual-essays/content'
