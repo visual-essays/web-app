@@ -8,8 +8,9 @@ logging.basicConfig(format='%(asctime)s : %(filename)s : \
   %(levelname)s : %(message)s', level=logging.DEBUG)
 logger = logging.getLogger()
 
+import os
 from time import time as now
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from bs4 import BeautifulSoup
 
@@ -19,7 +20,8 @@ logging.getLogger('requests').setLevel(logging.WARNING)
 app = Flask(__name__)
 CORS(app)
 
-api_endpoint = 'https://api.visual-essays.net'
+def api_endpoint():
+  return 'http://localhost:8000' if request.host.startswith('localhost') else 'https://api.visual-essays.net'
 
 # Prefix for site content
 prefix = 'visual-essays/content'
@@ -58,9 +60,14 @@ def _customize_response(html):
   return str(soup)
 
 def _get_html(path, base_url):
-  api_url = f'{api_endpoint}/html{path}?prefix={prefix}&base={base_url}'
+  api_url = f'{api_endpoint()}/html{path}?prefix={prefix}&base={base_url}'
   resp = requests.get(api_url)
   return resp.text if resp.status_code == 200 else ''
+
+@app.route('/favicon.ico')
+def favicon():
+  return send_from_directory(os.path.join(app.root_path, 'static'),
+                             'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/<path:path>')
 @app.route('/')
@@ -71,7 +78,7 @@ def render_html(path=None):
   path = f'/{path}' if path else '/'
   html = _get_html(path, base_url)
   html = _customize_response(html)
-  logger.info(f'render: api_endpoint={api_endpoint} base_url={base_url} \
+  logger.debug(f'render: api_endpoint={api_endpoint()} base_url={base_url} \
   prefix={prefix} path={path} elapsed={round(now()-start, 3)}')
   return html
 
