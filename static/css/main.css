@@ -6,17 +6,6 @@ ve-image, ve-entities, .section1, .section2, .float-right, .float-left {
   clear: both;
 }
 
-ve-image {
-  width: 40%;
-}
-
-ve-image {
-  float: right;
-  margin: 0 0 12px 18px;
-  border: 1px solid #ddd;
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
-}
-
 ve-image-grid ul {
   display: none;
 }
@@ -31,28 +20,6 @@ ve-image-grid ul {
   margin: 0 12px 18px 0;
 }
 
-/*
-ve-header {
-  height: 300px;
-}
-
-ve-header.sticky {
-  position: sticky;
-  top: -164;
-  z-index: 1000;
-}
-
-ve-header {
-  margin-left: -1.1em;
-  margin-top: -1.1em;
-  width: calc(100% + 2.2em)
-}
-
-ve-header img {
-  display: none;
-}
-*/
-
 .clearfix {
   clear: both;
 }
@@ -61,6 +28,7 @@ ve-header img {
   display: table;
   clear: both;
 }
+
 mark {
   cursor: pointer;
   background: unset;
@@ -69,20 +37,6 @@ mark {
 mark:hover {
   border-bottom: 3px solid #444;
 }
-/*
-mark::after {
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900; 
-  content: "\f002";
-  font-size: 75%;
-  line-height: 0;
-  position: relative;
-  vertical-align: baseline;
-  top: -0.5em;
-  color: #aaa;
-  padding-right: 4px;
-}
-*/
 mark::after {
   font-weight: 900; 
   content: "🔎";
@@ -93,6 +47,33 @@ mark::after {
   top: -0.5em;
   padding-left: 2px;
   padding-right: 4px;
+}
+
+/* Mobile Devices */
+@media (max-width: 480px) {
+}
+  
+/* Low resolution devices Tablets, Ipads */
+@media (min-width: 481px) and (max-width: 767px) {
+}
+  
+/* Tablets, iPads portrait mode */
+@media (min-width: 768px) and (max-width: 1024px){
+}
+  
+/* Laptops and Desktops */
+@media (min-width: 1025px) and (max-width: 1280px){
+  ve-image {
+    width: 40%;
+    float: right;
+    margin: 0 0 12px 18px;
+    border: 1px solid #ddd;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+  }
+}
+  
+/* Large screens */
+@media (min-width: 1281px) {
 }
 
 /************ Text clamping ***********/
