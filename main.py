@@ -62,7 +62,7 @@ def _customize_response(html):
 def _get_html(path, base_url):
   api_url = f'{api_endpoint()}/html{path}?prefix={prefix}&base={base_url}'
   resp = requests.get(api_url)
-  return resp.text if resp.status_code == 200 else ''
+  return resp.status_code, resp.text if resp.status_code == 200 else ''
 
 @app.route('/favicon.ico')
 def favicon():
@@ -76,11 +76,12 @@ def render_html(path=None):
   base_url = f'/{"/".join(request.base_url.split("/")[3:])}'
   if base_url != '/' and not base_url.endswith('/'): base_url += '/'
   path = f'/{path}' if path else '/'
-  html = _get_html(path, base_url)
-  html = _customize_response(html)
+  status, html = _get_html(path, base_url)
+  if status == 200:
+    html = _customize_response(html)
   logger.debug(f'render: api_endpoint={api_endpoint()} base_url={base_url} \
-  prefix={prefix} path={path} elapsed={round(now()-start, 3)}')
-  return html
+  prefix={prefix} path={path} status={status} elapsed={round(now()-start, 3)}')
+  return html, status
 
 if __name__ == '__main__':
   app.run(debug=True, host='0.0.0.0', port=8080)
