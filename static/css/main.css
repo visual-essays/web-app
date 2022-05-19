@@ -76,8 +76,9 @@ mark::after {
   }
 
   ve-image + p, ve-image ~ p,
-  ve-image + div, ve-image ~ div {
-    width: 53%;
+  ve-image + div, ve-image ~ div,
+  ve-image + blockquote, ve-image ~ blockquote {
+      width: 53%;
     /* text-align: justify; */
   }
 }
