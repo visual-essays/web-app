@@ -45,7 +45,7 @@ def _set_favicon(soup):
   _add_link(soup, '/static/images/favicon.ico', {'rel':'icon'})
 
 def _add_default_footer(soup):
-  main = soup.find('main')
+  main = soup.find('body')
   main.append(soup.new_tag('ve-footer'))
 
 def _customize_response(html):

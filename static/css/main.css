@@ -9,11 +9,17 @@ body {
 
 main {
   padding: 1rem;
+  max-width: 70rem;
+  margin: auto;
 }
 
-.section1, .section2 {
-  clear: both;
+section {
+  padding: 0;
 }
+
+/*.section1, .section2 {
+  clear: both;
+}*/
 
 p {
   color: #444;
@@ -63,9 +69,7 @@ mark::after {
 
 /* Laptops and Desktops */
 @media (min-width: 768px) {
-  .section1 {
-    padding: 12px;
-  }
+
   ve-image {
     clear: both;
     position: sticky;
