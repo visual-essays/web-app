@@ -11,7 +11,7 @@ Source - https://www.wikitechy.com/tutorials/javascript/offsetting-an-html-ancho
   margin: -150px 0 0; /* negative fixed header height */
 }
 
-.help-dialog :target:before {
+section.no-offset:target:before {
   display: none;
 }
 
