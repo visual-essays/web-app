@@ -34,15 +34,15 @@ def _add_link(soup, href, attrs=None):
 def _set_css(soup):
   # Remove default stylesheets
   # for el in soup.find_all('link', {'rel':'stylesheet'}):
-  #  if 'visual-essays' in el.attrs['href']: el.decompose()
+  #   if 'visual-essays' in el.attrs['href']: el.decompose()
   # Add custom stylesheet
-  _add_link(soup, '/static/css/custom.css', {'rel':'stylesheet'})
+  pass
 
 def _set_favicon(soup):
   # Remove default favicon
-  for el in soup.find_all('link', {'rel':'icon'}): el.decompose()
-  # Add custom favicon
-  _add_link(soup, '/static/images/favicon.ico', {'rel':'icon'})
+  # for el in soup.find_all('link', {'rel':'icon'}): el.decompose()
+  _add_link(soup, '/static/images/favicon.svg', {'rel': 'icon', 'type':'image/svg+xml'})
+  _add_link(soup, '/static/images/favicon.ico', {'rel':'icon', 'type':'image/png'})
 
 def _add_default_footer(soup):
   main = soup.find('body')
@@ -54,8 +54,8 @@ def _customize_response(html):
   #   https://beautiful-soup-4.readthedocs.io/en/latest/
   soup = BeautifulSoup(html, 'html5lib')
   # perform custom updates to api-generated html
-  # _set_css(soup)
-  # _set_favicon(soup)
+  _set_favicon(soup)
+  _set_css(soup)
   _add_default_footer(soup)
   return str(soup)
 
