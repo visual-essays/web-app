@@ -55,7 +55,8 @@ def _customize_response(html):
   _set_favicon(soup)
   _add_script(soup, '//cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/ScrollMagic.min.js', {'type':'text/javascript'})
   _add_script(soup, '//cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/plugins/debug.addIndicators.min.js', {'type':'text/javascript'})
-  _add_script(soup, 'https://www.googletagmanager.com/gtag/js?id=G-DRHNQSMN5Y', {'type':'text/javascript', 'async':''})
+  if request.host.startswith('localhost'):
+    _add_script(soup, 'https://www.googletagmanager.com/gtag/js?id=G-DRHNQSMN5Y', {'type':'text/javascript', 'async':''})
   _add_script(soup, '/static/js/main.js', {'type':'text/javascript', 'defer':''})
   _add_default_footer(soup)
   return str(soup)

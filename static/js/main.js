@@ -12,7 +12,7 @@ Array.from(document.querySelectorAll('p')).forEach(p => {  // build scenes
             duration: p.clientHeight
         })
         .setClassToggle(p, 'active') // add class toggle
-        .addIndicators()
+        //.addIndicators()
         .addTo(controller)
 })
 
