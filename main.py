@@ -31,12 +31,10 @@ def _add_link(soup, href, attrs=None):
   link.attrs = {**{'href':href}, **(attrs if attrs else {})}
   soup.head.append(link)
 
-def _set_css(soup):
-  # Remove default stylesheets
-  # for el in soup.find_all('link', {'rel':'stylesheet'}):
-  #   if 'visual-essays' in el.attrs['href']: el.decompose()
-  # Add custom stylesheet
-  pass
+def _add_script(soup, src, attrs=None):
+  script = soup.new_tag('script')
+  script.attrs = {**{'src':src}, **(attrs if attrs else {})}
+  soup.body.append(script)
 
 def _set_favicon(soup):
   # Remove default favicon
@@ -55,7 +53,10 @@ def _customize_response(html):
   soup = BeautifulSoup(html, 'html5lib')
   # perform custom updates to api-generated html
   _set_favicon(soup)
-  _set_css(soup)
+  _add_script(soup, '//cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/ScrollMagic.min.js', {'type':'text/javascript'})
+  _add_script(soup, '//cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/plugins/debug.addIndicators.min.js', {'type':'text/javascript'})
+  _add_script(soup, 'https://www.googletagmanager.com/gtag/js?id=G-DRHNQSMN5Y', {'type':'text/javascript', 'async':''})
+  _add_script(soup, '/static/js/main.js', {'type':'text/javascript', 'defer':''})
   _add_default_footer(soup)
   return str(soup)
 
@@ -68,7 +69,7 @@ def _get_html(path, base_url):
 def favicon():
   return send_from_directory(os.path.join(app.root_path, 'static'),
                              'favicon.ico', mimetype='image/vnd.microsoft.icon')
-
+                            
 @app.route('/<path:path>')
 @app.route('/')
 def render_html(path=None):

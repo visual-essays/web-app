@@ -1,18 +1,3 @@
-main {
-  padding: 1rem;
-  max-width: 70rem;
-  margin: auto;
-}
-
-section {
-  padding: 0;
-}
-
-/*
-.section1, .section2 {
-  clear: both;
-}
-*/
 
 ve-image {
   border: 1px solid #ddd;
@@ -40,7 +25,21 @@ mark::after {
   padding-right: 4px;
 }
 
-p {
+a{ color: #0645ad; text-decoration:none;}
+a:visited{ color: #0b0080; }
+a:hover{ color: #06e; }
+a:active{ color:#faa700; }
+a:focus{ outline: thin dotted; }
+a:hover, a:active{ outline: 0; }
+
+::-moz-selection{background:rgba(255,255,0,0.3);color:#000}
+::selection{background:rgba(255,255,0,0.3);color:#000}
+
+a::-moz-selection{background:rgba(255,255,0,0.3);color:#0645ad}
+a::selection{background:rgba(255,255,0,0.3);color:#0645ad}
+
+p{
+  margin:1em 0;
   color: #444;
 
   /* These are technically the same, but use both */
@@ -58,56 +57,6 @@ p {
   -moz-hyphens: auto;
   -webkit-hyphens: auto;
   hyphens: auto;
-}
-
-/* Mobile Devices */
-@media (max-width: 480px) {
-}
-  
-/* Low resolution devices Tablets, Ipads
-@media (min-width: 481px) and (max-width: 767px) {}
-*/
-
-/* Tablets, iPads portrait mode
-@media (min-width: 768px) and (max-width: 1024px){}
-*/
-
-/* Laptops and Desktops */
-@media (min-width: 768px) {
-
-  ve-image {
-    clear: both;
-    position: sticky;
-    top: 0;
-    width: 45%;
-    float: right;
-    margin: 0 0 12px 16px;
-  }
-
-  ve-image + p, ve-image ~ p,
-  ve-image + div, ve-image ~ div,
-  ve-image + blockquote, ve-image ~ blockquote {
-      width: 53%;
-    /* text-align: justify; */
-  }
-}
-
-
-a{ color: #0645ad; text-decoration:none;}
-a:visited{ color: #0b0080; }
-a:hover{ color: #06e; }
-a:active{ color:#faa700; }
-a:focus{ outline: thin dotted; }
-a:hover, a:active{ outline: 0; }
-
-::-moz-selection{background:rgba(255,255,0,0.3);color:#000}
-::selection{background:rgba(255,255,0,0.3);color:#000}
-
-a::-moz-selection{background:rgba(255,255,0,0.3);color:#0645ad}
-a::selection{background:rgba(255,255,0,0.3);color:#0645ad}
-
-p{
-  margin:1em 0;
 }
 
 img{
