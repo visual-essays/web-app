@@ -26,12 +26,3 @@ ve-header ul,
 ve-image-grid ul {
   display: none;
 }
-
-section.interactive p {
-  padding: 8px;
-  border: 2px solid transparent;
-  border-radius: 8px;
-}
-section.interactive p.active {
-  border: 2px solid #ccc;
-}
