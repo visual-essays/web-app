@@ -11,6 +11,10 @@ section {
   clear: both;
 }
 
+.clear {
+  clear: both;
+}
+
 .sticky p {
   border-left: 8px solid transparent;
 }
@@ -18,6 +22,16 @@ section {
   border-left: 4px solid #ccc;
   padding-left: 4px;
   background-color: #eee;
+}
+
+ve-header {
+  margin-bottom: 20px;
+}
+
+ve-footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
 }
 
 ve-image {
@@ -74,7 +88,9 @@ main.sticky-header .sticky ve-image {
   .sticky ve-image + div, 
   .sticky ve-image ~ div,
   .sticky ve-image + blockquote, 
-  .sticky ve-image ~ blockquote {
+  .sticky ve-image ~ blockquote,
+  .sticky ve-image + ve-image-grid,
+  .sticky ve-image ~ ve-image-grid {
     width: 53%;
     /* text-align: justify; */
   }
