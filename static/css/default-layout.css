@@ -8,7 +8,6 @@ main {
 
 section {
   padding: 0;
-  clear: both;
 }
 
 .clear {
@@ -21,7 +20,7 @@ section {
 .sticky p.active {
   border-left: 4px solid #ccc;
   padding-left: 4px;
-  background-color: #eee;
+  /* background-color: #eee; */
 }
 
 ve-header {
@@ -34,19 +33,12 @@ ve-footer {
   width: 100%;
 }
 
-ve-image {
-  float: right;
-  width: 45%;
-  margin: 0 0 12px 16px;
-}
-
 .sticky ve-image {
-  clear: both;
   position: sticky;
   top: 6px;
   background-color: white;
   z-index: 2;
-  height: calc(50vh - 124px);
+  height: calc(60vh - 124px);
 }
 
 main.sticky-header .sticky ve-image {
@@ -75,6 +67,12 @@ main.sticky-header .sticky ve-image {
     margin: auto;
   }
 
+  ve-image {
+    float: right;
+    width: 45%;
+    margin: 0 0 12px 16px;
+  }
+
   .sticky ve-image {
     height: unset;
   }
@@ -83,10 +81,12 @@ main.sticky-header .sticky ve-image {
     top: 154px;
   }
 
-  .sticky ve-image + p, 
-  .sticky ve-image ~ p,
+  .sticky ve-image + section, 
+  .sticky ve-image ~ section,
   .sticky ve-image + div, 
   .sticky ve-image ~ div,
+  .sticky ve-image + p, 
+  .sticky ve-image ~ p,
   .sticky ve-image + blockquote, 
   .sticky ve-image ~ blockquote,
   .sticky ve-image + ve-image-grid,

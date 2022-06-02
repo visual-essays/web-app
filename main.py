@@ -24,7 +24,8 @@ def api_endpoint():
   return 'http://localhost:8000' if request.host.startswith('localhost') or request.host.startswith('192.168') else 'https://api.visual-essays.net'
 
 # Prefix for site content
-prefix = 'visual-essays/content'
+# prefix = 'visual-essays/content'
+prefix = 'a3b51252'
 
 def _add_link(soup, href, attrs=None):
   link = soup.new_tag('link')
