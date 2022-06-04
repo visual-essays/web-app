@@ -69,9 +69,16 @@ def _get_html(path, base_url):
 
 @app.route('/favicon.ico')
 def favicon():
-  return send_from_directory(os.path.join(app.root_path, 'static'),
-                             'favicon.ico', mimetype='image/vnd.microsoft.icon')
-                            
+  return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+@app.route('/robots.txt')
+def robots_txt():
+  return send_from_directory(os.path.join(app.root_path, 'static'), 'robots.txt', mimetype='text/plain')
+
+@app.route('/sitemap.txt')
+def sitemap_txt():
+  return send_from_directory(os.path.join(app.root_path, 'static'), 'sitemap.txt', mimetype='text/plain')
+
 @app.route('/<path:path>')
 @app.route('/')
 def render_html(path=None):
