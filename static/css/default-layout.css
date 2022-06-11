@@ -37,7 +37,24 @@ ve-image.sticky  {
   z-index: 2;
 }
 
+section.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-gap: 12px;
+  align-items: flex-start;
+  justify-items: center;
+  padding: 12px 12px 24px 12px;
+  /* clear: both; */
+}
 
+section.cards > * {
+  border: 1px solid #ccc;
+  box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.3);
+  width: 240px;
+  max-width: 100%;
+  height: 400px;
+  overflow-y: scroll;
+}
 
 /* Mobile Devices */
 @media (max-width: 480px) {

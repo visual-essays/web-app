@@ -32,17 +32,17 @@ Array.from(document.querySelectorAll('p'))
 if (window.controller)  window.controller.destroy(true)
 window.controller = new ScrollMagic.Controller({globalSceneOptions: {}})
 window.triggerHook = window.isMobile ? 0.6 : (window.isEditor ? 300 : 200)/window.innerHeight
-// console.log(`triggerHook=${window.triggerHook}`)
+console.log(`triggerHook=${window.triggerHook}`)
 Array.from(document.querySelectorAll('p')).forEach(p => {  // build scenes
-    new ScrollMagic.Scene({
-            triggerElement: p,
-            triggerHook: window.triggerHook, 
-            offset: -40,
-            duration: p.clientHeight
-        })
-        .setClassToggle(p, 'active') // add class toggle
-        //.addIndicators()
-        .addTo(controller)
+  new ScrollMagic.Scene({
+        triggerElement: p,
+        triggerHook: window.triggerHook, 
+        offset: -40,
+        duration: p.clientHeight
+    })
+    .setClassToggle(p, 'active') // add class toggle
+    // .addIndicators()
+    .addTo(controller)
 })
 
 // Google Analytics
