@@ -1,6 +1,5 @@
-console.log('main-v1.js')
-
 const ENV = 'PROD'
+const isJuncture = window.location.hostname.indexOf('juncture-digital.org') === 0
 const ghToken = atob('Z2hwX05lcnV2RUYzRmx6M3o5YnFjQWZuOGpJQnJMR3lEMTNmYjYyVw==')
 const qargs = window.location.href.indexOf('?') > 0 ? parseQueryString(window.location.href.split('?')[1]) : {}
 const componentPrefix = 've1-'
@@ -63,7 +62,7 @@ let _vue = new Vue({
     hoverItem: undefined,
     html,
     items: [],
-    isJuncture: false,
+    isJuncture,
     junctureVersion: '0.1.0',
     layouts: ['visual-essay vertical'],
     markdown: null,
@@ -91,7 +90,7 @@ let _vue = new Vue({
   }),
   computed: {
     headerComponent() { return this.essayConfig ? `${componentPrefix}${this.essayConfig.header || 'header'}` : null},
-    mainComponent() { return 've1-visual-essay'},
+    mainComponent() { return this.essayConfig && this.essayConfig.main ? `${componentPrefix}${this.essayConfig.main.toLowerCase()}` : null},
     footerComponent() { return this.essayConfig ? `${componentPrefix}${this.essayConfig.footer || 'footer'}` : null},
     isAdminUser() { return ENV === 'DEV' || this.authenticatedUser !== null && (this.authenticatedUser.isAdmin || contentSource.acct === this.authenticatedUser.acct) },
     // ghToken() { return oauthAccessToken || ghUnscopedToken },
@@ -106,9 +105,8 @@ let _vue = new Vue({
     isVerticalLayout() { return !this.forceHorizontalLayout && this.layouts.indexOf('vertical') >= 0 },
     loginsEnabled() { return this.oauthCredsFound && (!this.essayConfig || !this.essayConfig['logins-disabled']) }
   },
-  created() { console.log('vue.created') },
+  created() {},
   mounted() {
-    this.parseEssay()
     let path
     if (window.location.href.indexOf('#') > 0) {
       path = window.location.href.split('#')[0].split('/').slice(3).join('')
@@ -117,19 +115,49 @@ let _vue = new Vue({
       else path = anchor
     } else {
       path = window.location.pathname.slice(contentSource.basePath.length) || '/'
+      path = path.length > 1 && path.slice(-1) === '/' ? path.slice(0,-1) : path
     }
     this.path = path
+    this.parseEssay()
   },
   methods: {
-    authenticate() {},
-    click() {},
-    doAction(action, options) {},
-    doPageAdd() {},
-    doSiteCreate() {},
-    doSiteUpdate() {},
-    hideForm() {},
-    loadEssay() {},
-    logout() {},
+    authenticate() {
+      let provider = new firebase.auth.GithubAuthProvider()
+      provider.addScope('repo')
+      firebase.auth().signInWithRedirect(provider)
+    },
+  
+    // Handles menu actions from header
+    async doAction(action, options) {
+      if (action === 'sendmail') {
+        this.doActionCallback = {status: 'processing', message: 'Processing request'}
+        let resp = await sendmail(options)
+        this.doActionCallback = {status: 'done', message: 'Email sent'}
+      } else if (action === 'view-markdown') {
+        this.markdownViewer.show()
+      } else if (action === 'user-guide') {
+        window.open('https://github.com/JSTOR-Labs/juncture/wiki', '_blank')
+      } else if (action === 'edit-page') {
+        this.editMarkdown()
+      } else if (action === 'goto-github') {
+        window.open(`https://github.com/${contentSource.acct}/${contentSource.repo}/tree/${contentSource.ref}`, '_blank')
+      } else if (action === 'viewSiteOnJuncture') {
+        window.location.href = `https://juncture-digital.org/${contentSource.acct}/${contentSource.repo}`
+      } else if (action === 'authenticate') {
+        this.authenticate()
+      } else if (action === 'logout') {
+        this.logout()
+      } else if (action === 'load-page') {
+        let newPage = `${this.contentSource.baseUrl}${this.contentSource.basePath}${options}`
+        if (this.qargs.ref) newPage += `?ref=${this.qargs.ref}`
+        console.log('load', newPage)
+        location.href = newPage
+      }
+    },
+
+    logout() {
+      console.log('logout')
+    },
 
     // Updates viewer data from events emitted when viewer components are loaded
     updateComponentData(data) { this.viewerData = {...this.viewerData, ...data }},
@@ -146,6 +174,18 @@ let _vue = new Vue({
     parseSection(section, id) {
       let sectionCtr = 0
       let segCtr = 0
+      if (section.classList.contains('cards') && !section.classList.contains('wrapper')) {
+        section.classList.remove('cards')
+        let wrapper = document.createElement('section')
+        wrapper.className = 'cards wrapper'
+        Array.from(section.querySelectorAll(':scope > section')).forEach(sec => {
+          sec.classList.add('card')
+          wrapper.appendChild(sec)
+          // section.removeChild(sec)
+        })
+        section.appendChild(wrapper)
+      }
+
       Array.from(section.children).forEach(el => {
         if (el.tagName === 'SECTION') {
           let dataId = `${id}.${++sectionCtr}`
@@ -175,8 +215,39 @@ let _vue = new Vue({
       })
     },
 
+    /*
+    if (elClasses.indexOf('cards') >= 0) {
+      let wrapper = new DOMParser().parseFromString(`<section class="${elClasses.join(' ')}"></section>`, 'text/html').children[0].children[1].children[0]
+      currentSection.appendChild(wrapper)
+    } else {
+      currentSection.classList.add(...elClasses)
+      let wrapper = parent.querySelector(':scope > .cards')
+      if (wrapper) {
+        currentSection.classList.add('card')
+        parent = wrapper
+      }
+    }
+    */
+  
     async parseEssay() {
       let tmp = new DOMParser().parseFromString(this.html, 'text/html').children[0].children[1]
+      this.convertResourceUrls(tmp)
+
+      Array.from(tmp.querySelectorAll('param'))
+      .filter(param => Object.values(param.attributes).find(attr => attr.nodeName !== 'id' && attr.nodeName !== 'class') === undefined)
+      .forEach(param => {
+        if (param.id || param.className) {
+          let prior = param.previousElementSibling
+          if (param.id && prior) prior.id = param.id
+          if (param.className) {
+            if (prior) prior.className = param.className
+            else essay.className = param.className
+          }
+          param.parentElement.removeChild(param)
+        }
+      })
+      console.log(tmp)
+  
       this.parseSection(tmp.children[0], '1')
       this.params = Array.from(tmp.querySelectorAll('param')).map((param,idx) => {
         let paramObj = { ...{
@@ -194,7 +265,13 @@ let _vue = new Vue({
       })
       this.entities = await this.getEntityData(this.findEntities(tmp, this.params))
       this.html = tmp.outerHTML
-      this.essayConfig = this.params.find(param => param['ve-config'])
+      let essayConfig = this.params.find(param => param['ve-config'])
+      if (essayConfig.banner) essayConfig.banner = convertURL(essayConfig.banner)
+      essayConfig.header = essayConfig.header || 'header'
+      essayConfig.main = essayConfig.main || essayConfig.component || 'visual-essay'
+      essayConfig.footer = essayConfig.footer || 'footer'
+      this.essayConfig = essayConfig
+
     },
 
     // Finds all entity references in param tags
@@ -276,14 +353,13 @@ let _vue = new Vue({
     },
 
     convertResourceUrls(root) {
-      let pathIsDir = this.path.slice(0,-1) === this.mdDir
       root.querySelectorAll('img').forEach(img => {
-        if (img.src.indexOf(window.location.origin) === 0) img.setAttribute('src', convertURL(img.src, this.path, pathIsDir))
+        if (img.src.indexOf(window.location.origin) === 0) img.setAttribute('src', convertURL(img.src, this.path))
       })
       root.querySelectorAll('param').forEach(param => {
         ['url', 'banner', 'article', 'logo'].forEach(attr => {
           if (param.attributes[attr]) {
-            param.setAttribute(attr, convertURL(param.attributes[attr].value, this.path, pathIsDir))
+            param.setAttribute(attr, convertURL(param.attributes[attr].value, this.path))
           }
         })
       })
@@ -332,6 +408,7 @@ let _vue = new Vue({
     setHoverItem(e) {
       this.hoverItem = e.type === 'mouseover' ? e.target.dataset.eid : null
     },
+  
     itemClickHandler(e) {
       e.stopPropagation()
       this.selectedItem = e.target.dataset.eid 
@@ -385,7 +462,7 @@ let _vue = new Vue({
           eventActions[action.target].push(action)
         })
       const actions = { ...this.actions }
-      Object.keys(eventActions).forEach(target => actions[`ve-${target}`] = eventActions[target])
+      Object.keys(eventActions).forEach(target => actions[`${componentPrefix}${target}`] = eventActions[target])
       this.actions = actions
     }
 
@@ -401,7 +478,6 @@ let _vue = new Vue({
 
     // Set app classes using essay config (ve-config) attributes, if present
     essayConfig (config) {
-      /*
       this.layouts = []
       this.viewerIsOpen = false
       if (config) {
@@ -409,7 +485,6 @@ let _vue = new Vue({
         if (config.title) document.title = this.siteConfig && this.siteConfig.title ? `${config.title} - ${this.siteConfig.title}` : config.title
         if (config.description) setMetaDescription(config.description)
       }
-      */
     },
 
     // Watcher that updates various data elements when the active paragraph changes
@@ -722,8 +797,7 @@ async function getComponentsList() {
   return [
     ...Object.values(await dir('/custom/components', contentSource)),
     ...Object.values(await dir('/components', contentSource)),
-    ...Object.values(await dir('/components', {acct: 'jstor-labs', repo: 'juncture-digital', hash: 'beta'})),
-    ...Object.values(await dir('/components', {acct: 'jstor-labs', repo: 'juncture', hash: 'main'}))
+    ...Object.values(await dir('/components', {acct: 'jstor-labs', repo: 'juncture', hash: 'v2'}))
   ]
 }
 
@@ -781,6 +855,7 @@ function setMetaDescription(description) {
   document.querySelector('head').appendChild(el)
 }
 function camelToKebab(input) { return input.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}
+function isNumeric(arg) { return !isNaN(arg) }
 function isEntityID(arg) { return typeof arg === 'string' && arg.split(':').slice(-1).find(val => val.length > 1 && val[0] === 'Q' && isNumeric(val.slice(1))) !== undefined }
 function attrsToObject(el) { return Object.fromEntries(Array.from(el.attributes).map(attr => [attr.nodeName, attr.value === '' || attr.value === 'true' ? true : attr.value === 'false' ? false : attr.value] )) }
 function arraysEqualIgnoreOrder(a, b) {
@@ -798,4 +873,31 @@ function parseUrl(href) {
   return (match && {protocol: match[1], host: match[2], hostname: match[3], origin: `${match[1]}://${match[2]}`,
           port: match[4], pathname: match[5] || '/', search: match[6], hash: match[7]}
   )
+}
+
+function convertURL(current, path) {
+  let _current = current.replace(/\s/g, '%20')
+  let pathElems = []
+  if (_current.indexOf('http') === 0) {
+    if (_current.indexOf(window.location.origin) === 0) {
+      let dirElems = path.split('/').filter(elem => elem).slice(0,-1)
+      let mdDir = dirElems.length > 0 ? `/${dirElems.join('/')}/` : '/'
+      _current = _current.replace(new RegExp(path.replace(/\//g, '\\/')), `${mdDir}`)
+      pathElems = _current.split('/').slice(3)
+    }
+    else return _current
+  } else if (_current.indexOf('/') === 0) {
+    pathElems = _current.split('/').filter(elem => elem)
+  } else {
+    pathElems = (path || window.location.pathname).split('/').filter(elem => elem)
+    pathElems = [...pathElems, ..._current.split('/').filter(elem => elem)]
+  }
+  if (isJuncture && pathElems.length >= 2) {
+    if ((contentSource.repo !== 'juncture' || contentSource.acct !== 'jstor-labs') && pathElems[0] === contentSource.acct && pathElems[1] === contentSource.repo) pathElems = pathElems.slice(2)
+  } else if (pathElems[0] === contentSource.repo) {
+    pathElems = pathElems.slice(1)
+  }
+  let converted = `${contentSource.assetsBaseUrl || contentSource.baseUrl}/${pathElems.join('/')}`
+  // console.log(`isJuncture=${isJuncture} convertURL: current=${current} converted=${converted} path=${path} pathElems=${pathElems}`)
+  return converted
 }

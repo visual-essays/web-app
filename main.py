@@ -47,42 +47,6 @@ def _add_default_footer(soup):
   main = soup.find('body')
   main.append(soup.new_tag('ve-footer'))
 
-def ve1_wrapper(soup):
-  btn = soup.find(src='https://juncture-digital.org/images/ve-button.png')
-  if btn:
-    btn.parent.parent.decompose()
-
-  html = '''<html lang="en">
-  <head></head>
-  <body>
-    <div id="app" class="vertical visual-essay">
-      <div id="header" ref="header">            
-        <component v-bind:is="headerComponent" :active="true" :scroll-top="scrollTop"
-                  :site-config="siteConfig"
-                  :essay-config="essayConfig"
-                  :content-source="contentSource"
-                  :path="path"
-                  :logins-enabled="loginsEnabled"
-                  :is-juncture="isJuncture"
-                  :is-authenticated="authenticatedUser !== null && loginsEnabled"
-                  :is-admin="isAdminUser"
-                  :version="junctureVersion"
-                  :do-action-callback="doActionCallback"
-                  component-name="ve-header"
-                  @do-action="doAction"
-                  @authenticate="authenticate"
-                  @logout="logout"
-        ></component>
-      </div>
-      <div id="essay">
-        <div id="essay-component">%s</div>
-      </div>
-      <div id="viewer"></div>
-    </div>
-  </body>
-</html>''' % ''.join([str(x) for x in soup.find('main').contents])
-  return BeautifulSoup(html, 'html5lib')
-
 def _customize_response(html):
   '''Perform any post-processing of API-generated HTML.'''
   # parse API-generated HTML with BeautifulSoup
@@ -95,13 +59,13 @@ def _customize_response(html):
   
   is_v1 = soup.find('param',ve_config='') is not None
   if is_v1:
-    btn = soup.find(src='https://juncture-digital.org/images/ve-button.png')
-    if btn:
-      btn.parent.decompose()
+    for src in ['https://juncture-digital.org/images/ve-button.png', 'https://dev-visual-essays.netlify.app/images/ve-button.png']:
+      btn = soup.find(src=src)
+      if btn:
+        btn.parent.decompose()
 
     html = open('juncture-v1.html', 'r').read()
     '''
-    soup = ve1_wrapper(soup)
     _add_link(soup, '/static/css/juncture-v1.css', {'rel':'stylesheet'})
     _add_script(soup, 'https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js', {'type':'text/javascript'})
     _add_script(soup, 'https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js', {'type':'text/javascript'})
@@ -109,7 +73,6 @@ def _customize_response(html):
     '''
     # essay_text = ''.join([str(x) for x in soup.find('main').contents])
     essay_text = str(soup.find('main'))
-    logger.info(str(soup))
     return html.replace('<<HTML>>', essay_text)
   else:
     _add_script(soup, '//cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/ScrollMagic.min.js', {'type':'text/javascript'})
@@ -118,8 +81,10 @@ def _customize_response(html):
     _add_default_footer(soup)
     return str(soup)
 
-def _get_html(path, base_url):
+def _get_html(path, base_url, ref=None, **kwargs):
   api_url = f'{api_endpoint()}/html{path}?prefix={prefix}&base={base_url}'
+  if ref:
+    api_url += f'&ref={ref}'
   resp = requests.get(api_url)
   return resp.status_code, resp.text if resp.status_code == 200 else ''
 
@@ -139,10 +104,11 @@ def sitemap_txt():
 @app.route('/')
 def render_html(path=None):
   start = now()
+  qargs = dict([(k, request.args.get(k)) for k in request.args])
   base_url = f'/{"/".join(request.base_url.split("/")[3:])}'
   if base_url != '/' and not base_url.endswith('/'): base_url += '/'
   path = f'/{path}' if path else '/'
-  status, html = _get_html(path, base_url)
+  status, html = _get_html(path, base_url, **qargs)
   if status == 200:
     html = _customize_response(html)
   logger.debug(f'render: api_endpoint={api_endpoint()} base_url={base_url} \
