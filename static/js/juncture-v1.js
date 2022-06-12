@@ -6,6 +6,7 @@ const componentPrefix = 've1-'
 const dirCache = {}
 
 const contentSource = await getContentSource()
+const siteConfig = await getSiteConfig()
 const componentsList = await getComponentsList()
 const availableViewers = []
 
@@ -53,36 +54,26 @@ let _vue = new Vue({
     doActionCallback: {},
     entities: {},
     essayConfig: null,
-    externalWindow: null,
     forceHorizontalLayout: window.matchMedia('only screen and (max-width: 1000px)').matches,
-    formProcessingMessage: '',
-    formProcessingStatus: 'ready',
     ghToken,
-    hoverEntity: undefined,
     hoverItem: undefined,
     html,
     items: [],
     isJuncture,
-    junctureVersion: '0.1.0',
+    junctureVersion: '0.5.0',
     layouts: ['visual-essay vertical'],
     markdown: null,
     markdownViewer: null,
     mdDir: '/',
     mdPath: '',
-    newRepo: null,
-    newPage: null,
     oauthCredsFound: false,
     params: [],
     path: '/',
     qargs,
-    releases: [],
-    reposForAcct: [],
     selectedItem: undefined,
-    selectedRelease: null,
-    selectedRepo: null,
     selectedViewer: null,
     scrollTop: 0,
-    siteConfig: {},
+    siteConfig,
     viewerData: {},
     viewerHeight: 0,
     viewersEnabled: [],
@@ -106,7 +97,7 @@ let _vue = new Vue({
     loginsEnabled() { return this.oauthCredsFound && (!this.essayConfig || !this.essayConfig['logins-disabled']) }
   },
   created() {},
-  mounted() {
+  async mounted() {
     let path
     if (window.location.href.indexOf('#') > 0) {
       path = window.location.href.split('#')[0].split('/').slice(3).join('')
@@ -118,6 +109,22 @@ let _vue = new Vue({
       path = path.length > 1 && path.slice(-1) === '/' ? path.slice(0,-1) : path
     }
     this.path = path
+    let pathIsDir = await isDir(path, this.contentSource)
+    this.mdDir = pathIsDir ? path : `/${path.split('/').filter(elem => elem).slice(0,-1).join('/')}`
+    this.mdPath = pathIsDir ? path === '/' ? '/README.md' : `${path}/README.md` : `${path}.md`
+    // console.log(`mdDir=${this.mdDir} mdPath=${this.mdPath}`)
+    // Initialize Markdown source viewer
+    this.markdown = await getGhFile(this.mdPath)
+    this.markdownViewer = tippy(this.$refs.header, {
+      trigger: 'manual', 
+      theme: 'light-border',
+      allowHTML: true,
+      interactive: true,
+      arrow: false,
+      placement: 'bottom-start',          
+      onShow: async (instance) => { instance.setContent(this.$refs.markdownViewer.innerHTML) },
+      onHide: (instance) => {}
+    })
     this.parseEssay()
   },
   methods: {
@@ -150,7 +157,6 @@ let _vue = new Vue({
       } else if (action === 'load-page') {
         let newPage = `${this.contentSource.baseUrl}${this.contentSource.basePath}${options}`
         if (this.qargs.ref) newPage += `?ref=${this.qargs.ref}`
-        console.log('load', newPage)
         location.href = newPage
       }
     },
@@ -246,7 +252,6 @@ let _vue = new Vue({
           param.parentElement.removeChild(param)
         }
       })
-      console.log(tmp)
   
       this.parseSection(tmp.children[0], '1')
       this.params = Array.from(tmp.querySelectorAll('param')).map((param,idx) => {
@@ -266,7 +271,7 @@ let _vue = new Vue({
       this.entities = await this.getEntityData(this.findEntities(tmp, this.params))
       this.html = tmp.outerHTML
       let essayConfig = this.params.find(param => param['ve-config'])
-      if (essayConfig.banner) essayConfig.banner = convertURL(essayConfig.banner)
+      if (essayConfig.banner) essayConfig.banner = convertURL(essayConfig.banner, this.mdDir)
       essayConfig.header = essayConfig.header || 'header'
       essayConfig.main = essayConfig.main || essayConfig.component || 'visual-essay'
       essayConfig.footer = essayConfig.footer || 'footer'
@@ -354,12 +359,12 @@ let _vue = new Vue({
 
     convertResourceUrls(root) {
       root.querySelectorAll('img').forEach(img => {
-        if (img.src.indexOf(window.location.origin) === 0) img.setAttribute('src', convertURL(img.src, this.path))
+        if (img.src.indexOf(window.location.origin) === 0) img.setAttribute('src', convertURL(img.src, this.mdDir))
       })
       root.querySelectorAll('param').forEach(param => {
         ['url', 'banner', 'article', 'logo'].forEach(attr => {
           if (param.attributes[attr]) {
-            param.setAttribute(attr, convertURL(param.attributes[attr].value, this.path))
+            param.setAttribute(attr, convertURL(param.attributes[attr].value, this.mdDir))
           }
         })
       })
@@ -504,7 +509,6 @@ let _vue = new Vue({
 
     items: {
       handler: function (items) {
-        console.log('items', items)
         let viewers = items.filter(item => this.availableViewers.indexOf(item.viewer) >= 0).map(item => item.viewer)
         let enabled = viewers.filter((viewer, index) => viewers.indexOf(viewer) === index)
         if (!arraysEqualIgnoreOrder(enabled, this.viewersEnabled)) this.viewersEnabled = enabled
@@ -626,7 +630,7 @@ Vue.mixin({
       }
       return objArray
     },
-  
+
     async dir(root, ghSource) {
       let cacheKey = ghSource ? `${ghSource.acct}/${ghSource.repo}/${ghSource.hash || ghSource.ref}${root}` : root
       if (!this.dirCache[cacheKey]) {
@@ -643,7 +647,7 @@ Vue.mixin({
           }
           if (url) {
             _dirList = await this.ghDirList(url)
-            files = Object.fromEntries(_dirList.tree.map(item => [item.path, `https://raw.githubusercontent.com/${ghSource.acct}/${ghSource.repo}/${ghSource.hash || ghSource.ref}${root}/${item.path}`]))
+            files = Object.fromEntries(_dirList.tree.map(item => [item.path, `https://raw.githubusercontent.com/${ghSource.acct}/${ghSource.repo}/${ghSource.hash || ghSource.ref}${root}${item.path}`]))
           }
         }
         this.dirCache[cacheKey] = files
@@ -738,6 +742,19 @@ Vue.mixin({
 })
 
 
+// Gets site config
+async function getSiteConfig() {
+  let config = await getGhFile('config.yaml')
+  config = config ? YAML.parse(config) : {}
+  if (config.banner) config.banner = convertURL(config.banner)
+
+  // if (config.gcApiKey) gcApiKey = atob(config.gcApiKey)
+  // if (config.gcAuthDomain) gcAuthDomain = atob(config.gcAuthDomain)
+  // if (config.gaPropertyID) gaPropertyID = config.gaPropertyID
+  // if (config.fontawesome) fontawesome = config.fontawesome
+  return config
+}
+
 async function getContentSource() {
   let contentSource = {}
   let pathElems = window.location.pathname.split('/').filter(elem => elem !== '')
@@ -761,6 +778,12 @@ async function githubRepoInfo(acct, repo) {
     ghInfo = {acct, repo, branch: resp.default_branch, ref: qargs.ref || resp.default_branch}
   }
   return ghInfo
+}
+
+  
+async function isDir(root, ghSource) {
+  let dirList = await dir(root, ghSource)
+  return Object.keys(dirList).length > 0
 }
 
 async function dir(root, ghSource) {
@@ -799,6 +822,15 @@ async function getComponentsList() {
     ...Object.values(await dir('/components', contentSource)),
     ...Object.values(await dir('/components', {acct: 'jstor-labs', repo: 'juncture', hash: 'v2'}))
   ]
+}
+
+async function getGhFile(path) {
+  let url = `https://api.github.com/repos/${contentSource.acct}/${contentSource.repo}/contents${path}?ref=${contentSource.ref}`
+  let resp = await fetch(url, ghToken ? {headers: {Authorization:`Token ${ghToken}`}} : {})
+  if (resp.ok) {
+    resp = await resp.json()
+    return decodeURIComponent(escape(atob(resp.content)))
+  }
 }
 
 function parseQueryString(queryString) {
@@ -875,21 +907,22 @@ function parseUrl(href) {
   )
 }
 
-function convertURL(current, path) {
+function convertURL(current, base) {
+  base = base || '/'
   let _current = current.replace(/\s/g, '%20')
   let pathElems = []
   if (_current.indexOf('http') === 0) {
     if (_current.indexOf(window.location.origin) === 0) {
-      let dirElems = path.split('/').filter(elem => elem).slice(0,-1)
+      let dirElems = base.split('/').filter(elem => elem).slice(0,-1)
       let mdDir = dirElems.length > 0 ? `/${dirElems.join('/')}/` : '/'
-      _current = _current.replace(new RegExp(path.replace(/\//g, '\\/')), `${mdDir}`)
+      _current = _current.replace(new RegExp(base.replace(/\//g, '\\/')), `${mdDir}`)
       pathElems = _current.split('/').slice(3)
     }
     else return _current
   } else if (_current.indexOf('/') === 0) {
     pathElems = _current.split('/').filter(elem => elem)
   } else {
-    pathElems = (path || window.location.pathname).split('/').filter(elem => elem)
+    pathElems = (base || window.location.pathname).split('/').filter(elem => elem)
     pathElems = [...pathElems, ..._current.split('/').filter(elem => elem)]
   }
   if (isJuncture && pathElems.length >= 2) {
