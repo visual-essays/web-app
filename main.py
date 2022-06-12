@@ -58,20 +58,12 @@ def _customize_response(html):
     _add_script(soup, 'https://www.googletagmanager.com/gtag/js?id=G-DRHNQSMN5Y', {'type':'text/javascript', 'async':''})
   
   is_v1 = soup.find('param',ve_config='') is not None
-  if is_v1:
+  if is_v1: # For Juncture V1 
     for src in ['https://juncture-digital.org/images/ve-button.png', 'https://dev-visual-essays.netlify.app/images/ve-button.png']:
       btn = soup.find(src=src)
       if btn:
         btn.parent.decompose()
-
-    html = open('juncture-v1.html', 'r').read()
-    '''
-    _add_link(soup, '/static/css/juncture-v1.css', {'rel':'stylesheet'})
-    _add_script(soup, 'https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js', {'type':'text/javascript'})
-    _add_script(soup, 'https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js', {'type':'text/javascript'})
-    _add_script(soup, '/static/js/juncture-v1.js', {'type':'module'})
-    '''
-    # essay_text = ''.join([str(x) for x in soup.find('main').contents])
+    html = open('static/html/juncture-v1.html', 'r').read()
     essay_text = str(soup.find('main'))
     return html.replace('<<HTML>>', essay_text)
   else:
