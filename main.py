@@ -21,7 +21,12 @@ app = Flask(__name__)
 CORS(app)
 
 def api_endpoint():
-  return 'http://localhost:8000' if request.host.startswith('localhost') or request.host.startswith('192.168') else 'https://api.visual-essays.net'
+  if request.host.startswith('localhost') or request.host.startswith('192.168'):
+    _api_endpoint = 'http://localhost:8000'
+  else:
+    _api_endpoint = 'https://api.visual-essays.net' if 'visual-essays.net' in request.host else 'https://api.juncture-digital.org'
+  logger.info(f'api_endpoint: host={request.host} api_endpoint={_api_endpoint}')
+  return _api_endpoint
 
 # Prefix for site content
 # prefix = 'visual-essays/content'
