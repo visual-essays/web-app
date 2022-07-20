@@ -66,10 +66,14 @@ def _customize_response(html):
   return str(soup)
 
 def _get_html(path, base_url, ref=None, **kwargs):
-  api_url = f'{api_endpoint()}/html{path}?prefix={prefix}&base={base_url}'
+  _api_endpoint = api_endpoint()
+  api_url = f'{_api_endpoint}/html{path}?prefix={prefix}&base={base_url}'
   if ref: api_url += f'&ref={ref}'
   resp = requests.get(api_url)
-  return resp.status_code, resp.text if resp.status_code == 200 else ''
+  status_code, html =  resp.status_code, resp.text if resp.status_code == 200 else ''
+  if status_code == 200 and _api_endpoint == 'http://localhost:8000':
+    html = html.replace('https://unpkg.com/visual-essays/dist/visual-essays','http://localhost:3333/build')
+  return status_code, html
 
 @app.route('/favicon.ico')
 def favicon():
