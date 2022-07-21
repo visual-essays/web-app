@@ -311,7 +311,6 @@ a::-moz-selection{background:rgba(255,255,0,0.3);color:#0645ad}
 a::selection{background:rgba(255,255,0,0.3);color:#0645ad}
 
 p, li {
-  margin:1em 0;
   color: #444;
 
   /* These are technically the same, but use both */
@@ -329,6 +328,10 @@ p, li {
   -moz-hyphens: auto;
   -webkit-hyphens: auto;
   hyphens: auto;
+}
+
+p {
+  margin:1em 0;
 }
 
 img {
