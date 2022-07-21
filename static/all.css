@@ -229,6 +229,10 @@ ve-footer {
   .ve-component.sticky ~ div,
   .ve-component.sticky + p, 
   .ve-component.sticky ~ p,
+  .ve-component.sticky + ol, 
+  .ve-component.sticky ~ ol
+  .ve-component.sticky + ul, 
+  .ve-component.sticky ~ ul,
   .ve-component.sticky + blockquote, 
   .ve-component.sticky ~ blockquote,
   .ve-component.sticky + ve-image-grid,
@@ -242,6 +246,10 @@ ve-footer {
   .ve-component.sticky.left ~ div,
   .ve-component.sticky.left + p, 
   .ve-component.sticky.left ~ p,
+  .ve-component.sticky.left + ol, 
+  .ve-component.sticky.left ~ ol
+  .ve-component.sticky.left + ul, 
+  .ve-component.sticky.left ~ ul,
   .ve-component.sticky.left + blockquote, 
   .ve-component.sticky.left ~ blockquote,
   .ve-component.sticky.left + ve-image-grid,
@@ -255,6 +263,10 @@ ve-footer {
   .ve-component.sticky.full ~ div,
   .ve-component.sticky.full + p, 
   .ve-component.sticky.full ~ p,
+  .ve-component.sticky.full + ol, 
+  .ve-component.sticky.full ~ ol
+  .ve-component.sticky.full + ul, 
+  .ve-component.sticky.full ~ ul,
   .ve-component.sticky.full + blockquote, 
   .ve-component.sticky.full ~ blockquote,
   .ve-component.sticky.full + ve-image-grid,
@@ -298,7 +310,7 @@ a:hover, a:active{ outline: 0; }
 a::-moz-selection{background:rgba(255,255,0,0.3);color:#0645ad}
 a::selection{background:rgba(255,255,0,0.3);color:#0645ad}
 
-p {
+p, li {
   margin:1em 0;
   color: #444;
 
