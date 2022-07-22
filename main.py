@@ -12,6 +12,8 @@ import os
 from time import time as now
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
+from serverless_wsgi import handle_request
+
 from bs4 import BeautifulSoup
 
 import requests
@@ -19,6 +21,9 @@ logging.getLogger('requests').setLevel(logging.WARNING)
 
 app = Flask(__name__)
 CORS(app)
+
+def handler(event, context):
+  return handle_request(app, event, context)
 
 def api_endpoint():
   if request.host.startswith('localhost') or request.host.startswith('192.168'):
@@ -88,6 +93,7 @@ def sitemap_txt():
   return send_from_directory(os.path.join(app.root_path, 'static'), 'sitemap.txt', mimetype='text/plain')
 
 @app.route('/<path:path>')
+@app.route('/<path:path>/')
 @app.route('/')
 def render_html(path=None):
   start = now()
