@@ -75,6 +75,13 @@ ve-footer {
   z-index: 2;
 }
 
+section { position:relative; }
+ve-tabs {height: 80px;}
+h1 {margin-bottom: 32px;}
+.tab { position:absolute; visibility:hidden; width: 100%; height:100%; }
+.tab h1, .tab h2, .tab h3, .tab h4, .tab h5, .tab h6 { display:none; }
+.tab.active { visibility:visible; border-top:1px solid #999; }
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr) );
