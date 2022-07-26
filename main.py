@@ -72,6 +72,8 @@ def _customize_response(html):
 
 def _get_html(path, base_url, ref=None, **kwargs):
   _api_endpoint = api_endpoint()
+  if request.host.startswith('localhost'):
+    logger.info(f'_get_html: path={path} prefix={prefix} base={base_url}')
   api_url = f'{_api_endpoint}/html{path}?prefix={prefix}&base={base_url}'
   if ref: api_url += f'&ref={ref}'
   resp = requests.get(api_url)
