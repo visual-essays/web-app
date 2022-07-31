@@ -67,6 +67,18 @@ ve-header {
   margin-bottom: 20px;
 }
 
+main.sticky-header .ve-component.sticky {
+  top: 104px;
+}
+
+main.sticky-header ve-map.sticky {
+top: 150px;
+}
+
+main.sticky-header .ve-component.sticky {
+  top: 150px;
+}
+
 ve-footer {
   width: 100%;
 }
@@ -213,14 +225,6 @@ h1 {margin-bottom: 32px;}
     background-color: #eee;
   }
 
-  main.sticky-header .ve-component.sticky {
-      top: 104px;
-  }
-
-  main.sticky-header ve-map.sticky {
-    top: 150px;
-  }
-
   ve-image, ve-map {
     clear: both;
     float: right;
@@ -253,10 +257,6 @@ h1 {margin-bottom: 32px;}
   .ve-component.sticky {
     position: sticky;
     top: 0;
-  }
-
-  main.sticky-header .ve-component.sticky {
-    top: 150px;
   }
 
   .ve-component.sticky + div.footnote, 
