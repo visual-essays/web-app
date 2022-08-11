@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 '''
 Flask app for Visual Essays site.
-Dependencies: bs4 Flask Flask-Cors html5lib requests
+Dependencies: bs4 Flask Flask-Cors html5lib PyYAML requests serverless_wsgi
 '''
 
 import logging
@@ -9,10 +12,14 @@ logging.basicConfig(format='%(asctime)s : %(filename)s : \
 logger = logging.getLogger()
 
 import os
+SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
+
 from time import time as now
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from serverless_wsgi import handle_request
+import argparse
+import yaml
 
 from bs4 import BeautifulSoup
 
@@ -25,17 +32,12 @@ CORS(app)
 def handler(event, context):
   return handle_request(app, event, context)
 
-def api_endpoint():
-  if request.host.startswith('localhost') or request.host.startswith('192.168'):
-    _api_endpoint = 'http://localhost:8000'
-  else:
-    _api_endpoint = 'https://api.visual-essays.net' if 'visual-essays.net' in request.host else 'https://api.juncture-digital.org'
-  logger.info(f'api_endpoint: host={request.host} api_endpoint={_api_endpoint}')
-  return _api_endpoint
+CREDS = yaml.load(open(f'{SCRIPT_DIR}/creds.yaml', 'r').read(), Loader=yaml.FullLoader)
 
-# Prefix for site content
-# prefix = 'visual-essays/content'
-prefix = 'a3b51252'
+API_ENDPOINT = 'https://api.juncture-digital.org'
+PREFIX = 'visual-essays/content' # Prefix for site content, typically Github username/repo
+REF = ''                         # Github ref (branch)
+LOCAL_CONTENT_ROOT = None
 
 def _add_link(soup, href, attrs=None):
   link = soup.new_tag('link')
@@ -70,15 +72,30 @@ def _customize_response(html):
   # _set_style(soup)
   return str(soup)
 
-def _get_html(path, base_url, ref=None, **kwargs):
-  _api_endpoint = api_endpoint()
-  if request.host.startswith('localhost'):
-    logger.info(f'_get_html: path={path} prefix={prefix} base={base_url}')
-  api_url = f'{_api_endpoint}/html{path}?prefix={prefix}&base={base_url}'
-  if ref: api_url += f'&ref={ref}'
-  resp = requests.get(api_url)
-  status_code, html =  resp.status_code, resp.text if resp.status_code == 200 else ''
-  if status_code == 200 and _api_endpoint == 'http://localhost:8000':
+def _get_local_content(path):
+  '''For local development and testing.'''
+  if path.endswith('/'): path = path[:-1]
+  _paths = [f'{LOCAL_CONTENT_ROOT}{path}.md', f'{LOCAL_CONTENT_ROOT}{path}/README.md']
+  for _path in _paths:
+    if os.path.exists(_path):
+      return open(_path, 'r').read()
+  logger.warn(f'Local content not found: path={path}')
+
+def _get_html(path, base_url, ref=REF, **kwargs):
+  html = ''
+  status_code = 404
+  if LOCAL_CONTENT_ROOT:
+    md = _get_local_content(path)
+    if md: # Markdown found, convert to HTML using API
+      api_url = f'{API_ENDPOINT}/html/?prefix={PREFIX}&base={base_url}'
+      resp = requests.post(api_url, json={'markdown':md, 'prefix':PREFIX})
+      status_code, html =  resp.status_code, resp.text if resp.status_code == 200 else ''
+  else:
+    api_url = f'{API_ENDPOINT}/html{path}?prefix={PREFIX}&base={base_url}'
+    logger.info(api_url)
+    resp = requests.get(api_url + (f'&ref={ref}' if ref else ''))
+    status_code, html =  resp.status_code, resp.text if resp.status_code == 200 else ''
+  if status_code == 200 and 'localhost' in API_ENDPOINT:
     html = html.replace('https://unpkg.com/visual-essays/dist/visual-essays','http://localhost:3333/build')
   return status_code, html
 
@@ -103,12 +120,37 @@ def render_html(path=None):
   base_url = f'/{"/".join(request.base_url.split("/")[3:])}'
   if base_url != '/' and not base_url.endswith('/'): base_url += '/'
   path = f'/{path}' if path else '/'
+  logger.info(f'render: path={path} base_url={base_url}')
   status, html = _get_html(path, base_url, **qargs)
   if status == 200:
     html = _customize_response(html)
-  logger.debug(f'render: api_endpoint={api_endpoint()} base_url={base_url} \
-  prefix={prefix} path={path} status={status} elapsed={round(now()-start, 3)}')
+  logger.debug(f'render: api_endpoint={API_ENDPOINT} base_url={base_url} \
+  prefix={PREFIX} path={path} status={status} elapsed={round(now()-start, 3)}')
   return html, status
 
+'''
+@app.route('/search')
+def search():
+  args = {**{
+      'key': CREDS['GOOGLE_API_KEY'],
+      'cx': '568011e472c1ffe27'
+    }, 
+    **dict(request.args)
+  }
+  url = f'https://www.googleapis.com/customsearch/v1?{urlencode(args)}'
+  return requests.get(url).json()
+'''
+
 if __name__ == '__main__':
-  app.run(debug=True, host='0.0.0.0', port=8080)
+  logger.setLevel(logging.INFO)
+  parser = argparse.ArgumentParser(description='Image Info')
+  parser.add_argument('--port', help='Port', type=int, default=9000)
+  parser.add_argument('--api', help='API Endpoint', default=API_ENDPOINT)
+  parser.add_argument('--prefix', help='Content URL prefix', default=PREFIX)
+  parser.add_argument('--content', help='Local content root', default=None)
+  args = parser.parse_args()
+  API_ENDPOINT = args.api
+  PREFIX = args.prefix
+  LOCAL_CONTENT_ROOT = os.path.abspath(args.content) if args.content else None
+  print(f'\nAPI_ENDPOINT: {API_ENDPOINT}\nPREFIX: {PREFIX}\LOCAL_CONTENT_ROOT: {LOCAL_CONTENT_ROOT}\n')
+  app.run(debug=True, host='0.0.0.0', port=args.port)
