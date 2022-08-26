@@ -92,8 +92,8 @@ def _get_html(path, base_url, ref=REF, **kwargs):
       status_code, html =  resp.status_code, resp.text if resp.status_code == 200 else ''
   else:
     api_url = f'{API_ENDPOINT}/html{path}?prefix={PREFIX}&base={base_url}'
-    logger.info(api_url)
-    resp = requests.get(api_url + (f'&ref={ref}' if ref else ''))
+    if ref: api_url += f'&ref={ref}'
+    resp = requests.get(api_url)
     status_code, html =  resp.status_code, resp.text if resp.status_code == 200 else ''
   if status_code == 200 and 'localhost' in API_ENDPOINT:
     html = html.replace('https://unpkg.com/visual-essays/dist/visual-essays','http://localhost:3333/build')
@@ -120,7 +120,7 @@ def render_html(path=None):
   base_url = f'/{"/".join(request.base_url.split("/")[3:])}'
   if base_url != '/' and not base_url.endswith('/'): base_url += '/'
   path = f'/{path}' if path else '/'
-  logger.info(f'render: path={path} base_url={base_url}')
+  logger.info(f'render: path={path} base_url={base_url} qargs={qargs}')
   status, html = _get_html(path, base_url, **qargs)
   if status == 200:
     html = _customize_response(html)
@@ -144,7 +144,7 @@ def search():
 if __name__ == '__main__':
   logger.setLevel(logging.INFO)
   parser = argparse.ArgumentParser(description='Image Info')
-  parser.add_argument('--port', help='Port', type=int, default=9000)
+  parser.add_argument('--port', help='Port', type=int, default=8080)
   parser.add_argument('--api', help='API Endpoint', default=API_ENDPOINT)
   parser.add_argument('--prefix', help='Content URL prefix', default=PREFIX)
   parser.add_argument('--content', help='Local content root', default=None)
