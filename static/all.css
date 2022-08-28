@@ -69,16 +69,12 @@ ve-header {
   margin-bottom: 20px;
 }
 
-main.sticky-header .ve-component.sticky {
-  top: 104px;
-}
-
 main.sticky-header ve-map.sticky {
 top: 150px;
 }
 
 main.sticky-header .ve-component.sticky {
-  top: 150px;
+  top: 109px;
 }
 
 ve-footer {
@@ -202,13 +198,19 @@ h1 {margin-bottom: 32px;}
 @media (max-width: 480px) {
 
   main {
-    font-size: 1rem;
+    font-size: 1.1rem;
+    line-height: 1.3;
     padding: .5rem .5rem 40vh .5rem;
   }
 
+  main.sticky-header .ve-component.sticky {
+    top: 65px;
+  }
+  /*
   .ve-component.sticky  {
     height: calc(60vh - 124px);
   }
+  */
 
 }
 
@@ -227,7 +229,9 @@ h1 {margin-bottom: 32px;}
     background-color: #eee;
   }
 
-  ve-image, ve-map, ve-video {
+  ve-image,
+  ve-map,
+  ve-video {
     clear: both;
     float: right;
     width: 45%;
