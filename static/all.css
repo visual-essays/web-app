@@ -82,6 +82,10 @@ ve-footer {
 }
 
 .ve-component.sticky {
+  position: -webkit-sticky;
+  position: -moz-sticky;
+  position: -o-sticky;
+  position: -ms-sticky;
   position: sticky;
   top: 0;
   background-color: white;
