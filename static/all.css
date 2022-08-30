@@ -69,14 +69,6 @@ ve-header {
   margin-bottom: 20px;
 }
 
-main.sticky-header ve-map.sticky {
-top: 150px;
-}
-
-main.sticky-header .ve-component.sticky {
-  top: 109px;
-}
-
 ve-footer {
   width: 100%;
 }
@@ -206,10 +198,10 @@ h1 {margin-bottom: 32px;}
     line-height: 1.3;
     padding: .5rem .5rem 40vh .5rem;
   }
-
-  main.sticky-header .ve-component.sticky {
-    top: 65px;
+  ve-header {
+    margin-left: -.5rem;
   }
+
   /*
   .ve-component.sticky  {
     height: calc(60vh - 124px);
