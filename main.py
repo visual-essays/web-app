@@ -17,7 +17,6 @@ SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 from time import time as now
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
-from serverless_wsgi import handle_request
 import argparse
 import yaml
 
@@ -26,11 +25,16 @@ from bs4 import BeautifulSoup
 import requests
 logging.getLogger('requests').setLevel(logging.WARNING)
 
+# app = Flask(__name__, static_url_path='/_nuxt', static_folder='dist/_nuxt')
 app = Flask(__name__)
 CORS(app)
 
-def handler(event, context):
-  return handle_request(app, event, context)
+try:
+  from serverless_wsgi import handle_request
+  def handler(event, context):
+    return handle_request(app, event, context)
+except:
+  pass
 
 CREDS = yaml.load(open(f'{SCRIPT_DIR}/creds.yaml', 'r').read(), Loader=yaml.FullLoader)
 
@@ -115,6 +119,7 @@ def sitemap_txt():
 @app.route('/<path:path>/')
 @app.route('/')
 def render_html(path=None):
+  logger.info('render_html')
   start = now()
   qargs = dict([(k, request.args.get(k)) for k in request.args])
   base_url = f'/{"/".join(request.base_url.split("/")[3:])}'
@@ -127,6 +132,22 @@ def render_html(path=None):
   logger.debug(f'render: api_endpoint={API_ENDPOINT} base_url={base_url} \
   prefix={PREFIX} path={path} status={status} elapsed={round(now()-start, 3)}')
   return html, status
+
+@app.route('/_nuxt/<path:path>')
+def nuxt_assets(path):
+  path_elems = [pe for pe in path.split('/') if pe]
+  dir = '/'.join([app.root_path, 'dist', '_nuxt'] + path_elems[0:-1])
+  file = path_elems[-1]
+  logger.info(f'dir={dir} file={file}')
+  return send_from_directory(dir, file)
+
+@app.route('/media/<path:path>')
+@app.route('/essays/<path:path>')
+@app.route('/media/')
+@app.route('/essays/')
+def render_app(path=None):
+  logger.info('render_app')
+  return send_from_directory(os.path.join(app.root_path, 'dist'), '404.html')
 
 '''
 @app.route('/search')
