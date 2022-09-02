@@ -196,7 +196,7 @@ h1 {margin-bottom: 32px;}
   main {
     font-size: 1.1rem;
     line-height: 1.3;
-    padding: .5rem .5rem 40vh .5rem;
+    padding: 0 .5rem 40vh .5rem;
   }
   ve-header {
     margin-left: -.5rem;
@@ -215,7 +215,7 @@ h1 {margin-bottom: 32px;}
 
   main {
     font-size: 1.2rem;
-    padding: 1rem 1rem calc(100vh - 300px) 1rem;
+    padding: 0 1rem calc(100vh - 300px) 1rem;
     padding-bottom: 50vh;
     max-width: 1000px;
     margin: auto;

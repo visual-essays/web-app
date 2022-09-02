@@ -136,7 +136,7 @@ def render_html(path=None):
 @app.route('/_nuxt/<path:path>')
 def nuxt_assets(path):
   path_elems = [pe for pe in path.split('/') if pe]
-  dir = '/'.join([app.root_path, 'dist', '_nuxt'] + path_elems[0:-1])
+  dir = '/'.join([app.root_path, 'tools-app', 'dist', '_nuxt'] + path_elems[0:-1])
   file = path_elems[-1]
   logger.info(f'dir={dir} file={file}')
   return send_from_directory(dir, file)
@@ -147,7 +147,7 @@ def nuxt_assets(path):
 @app.route('/essays/')
 def render_app(path=None):
   logger.info('render_app')
-  return send_from_directory(os.path.join(app.root_path, 'dist'), '404.html')
+  return send_from_directory(os.path.join(app.root_path, 'tools-app', 'dist'), '404.html')
 
 '''
 @app.route('/search')
@@ -173,5 +173,5 @@ if __name__ == '__main__':
   API_ENDPOINT = args.api
   PREFIX = args.prefix
   LOCAL_CONTENT_ROOT = os.path.abspath(args.content) if args.content else None
-  print(f'\nAPI_ENDPOINT: {API_ENDPOINT}\nPREFIX: {PREFIX}\LOCAL_CONTENT_ROOT: {LOCAL_CONTENT_ROOT}\n')
+  print(f'\nAPI_ENDPOINT: {API_ENDPOINT}\nPREFIX: {PREFIX}\nLOCAL_CONTENT_ROOT: {LOCAL_CONTENT_ROOT}\n')
   app.run(debug=True, host='0.0.0.0', port=args.port)
