@@ -2,7 +2,7 @@
   <div class="wrapper">
     <!-- <app-header></app-header> -->
 
-    <b-navbar id="top-navbar" align="right" fixed="top"type="dark" variant="primary">
+    <b-navbar id="top-navbar" align="right" fixed="top" type="dark" variant="primary">
       <b-navbar-brand href="/">Juncture</b-navbar-brand>
     </b-navbar>
 

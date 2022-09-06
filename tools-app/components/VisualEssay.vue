@@ -6,6 +6,8 @@
   
 import Vue from 'vue'
 
+const apiEndpoint = 'https://api.juncture-digital.org'
+
 export default Vue.extend({
   name: 'VisualEssay',
   props: {
@@ -55,7 +57,7 @@ export default Vue.extend({
   methods: {
 
     loadPage() {
-      let url = `https://api.juncture-digital.org/html/${this._prefix}/${this._path}${this._path === '' ? '' : '/'}?base=${this._baseQarg}&prefix=${this._prefix}&inline=true`
+      let url = `${apiEndpoint}/html/${this._prefix}/${this._path}${this._path === '' ? '' : '/'}?base=${this._baseQarg}&prefix=${this._prefix}&inline=true`
       if (this._ref) url += `&ref=${this._ref}`
       console.log(url)
       fetch(url).then(resp => resp.text())

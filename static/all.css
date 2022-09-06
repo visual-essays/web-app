@@ -185,9 +185,30 @@ h1 {margin-bottom: 32px;}
   padding: .5rem .5rem 0 .5rem;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  /* -webkit-line-clamp: 5; */
   -webkit-box-orient: vertical;
   margin: 0 0 .5rem 0;
+}
+
+.hero-text {
+  color: white;
+  text-align: center;
+  font-size: 2.5rem;
+  max-width: 60%;
+  margin: auto;
+  font-family: Georgia;
+}
+
+.cta {
+  width: 300px;
+  background-color: #FFE55A;
+  border-radius: 50px;
+  font-family: Roboto;
+  font-size: 30px;
+  padding: 16px 72px;
+  margin: auto;
+  margin-top: 0;
+  text-align: center;
 }
 
 /* Mobile Devices */
@@ -196,10 +217,10 @@ h1 {margin-bottom: 32px;}
   main {
     font-size: 1.1rem;
     line-height: 1.3;
-    padding: 0 .5rem 40vh .5rem;
+    padding: 0 0 40vh 0;
   }
   ve-header {
-    margin-left: -.5rem;
+    /* margin-left: -.5rem; */
   }
 
   /*
@@ -207,6 +228,16 @@ h1 {margin-bottom: 32px;}
     height: calc(60vh - 124px);
   }
   */
+  .hero-text {
+    max-width: 80%;
+    font-size: 1.8rem;
+  }
+  .cta {
+    width: 180px;
+    border-radius: 40px;
+    font-size: 20px;
+    padding: 12px 24px;
+  }
 
 }
 
@@ -215,8 +246,11 @@ h1 {margin-bottom: 32px;}
 
   main {
     font-size: 1.2rem;
+    /*
     padding: 0 1rem calc(100vh - 300px) 1rem;
     padding-bottom: 50vh;
+    */
+    padding: 0 1rem;
     max-width: 1000px;
     margin: auto;
   }

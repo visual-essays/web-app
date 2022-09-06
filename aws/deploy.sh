@@ -4,7 +4,6 @@ FUNCTION_NAME=${1:-juncture-webapp}
 
 cd "$(dirname "$0")/../tools-app"
 
-cd ../tools-app
 npm run generate
 
 cd ../aws

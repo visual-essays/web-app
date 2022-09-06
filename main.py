@@ -15,10 +15,11 @@ import os
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 from time import time as now
-from flask import Flask, request, send_from_directory
+from flask import Flask, Response, redirect, request, send_from_directory
 from flask_cors import CORS
 import argparse
 import yaml
+import base64
 
 from bs4 import BeautifulSoup
 
@@ -139,17 +140,24 @@ def nuxt_assets(path):
   dir = '/'.join([app.root_path, 'tools-app', 'dist', '_nuxt'] + path_elems[0:-1])
   file = path_elems[-1]
   logger.info(f'dir={dir} file={file}')
-  return send_from_directory(dir, file)
+  extension = file.split('.')[-1]
+  if extension in ('png','jpg','jpeg'):
+    # return Response(base64.b64encode(open(f'{dir}/{file}', 'rb').read()), mimetype=f'image/{extension.replace("jpg","jpeg")}')
+    return redirect(f'https://visual-essays.github.io/web-app/static/icons/{file}')
+  else:
+    return send_from_directory(dir, file)
 
 @app.route('/media/<path:path>')
 @app.route('/essays/<path:path>')
 @app.route('/media/')
 @app.route('/essays/')
+@app.route('/tools/')
+@app.route('/media')
+@app.route('/essays')
+@app.route('/tools')
 def render_app(path=None):
-  logger.info('render_app')
   return send_from_directory(os.path.join(app.root_path, 'tools-app', 'dist'), '404.html')
 
-'''
 @app.route('/search')
 def search():
   args = {**{
@@ -158,9 +166,11 @@ def search():
     }, 
     **dict(request.args)
   }
+  '''
   url = f'https://www.googleapis.com/customsearch/v1?{urlencode(args)}'
   return requests.get(url).json()
-'''
+  '''
+  return {}
 
 if __name__ == '__main__':
   logger.setLevel(logging.INFO)
