@@ -17,7 +17,8 @@ export default {
       { hid: 'description', name: 'description', content: '' },
       { name: 'format-detection', content: 'telephone=no' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-      { name: 'theme-color', content: '#5A162E' },
+      //{ name: 'theme-color', content: '#5A162E' },
+      { name: 'theme-color', content: '#014473' },
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
@@ -46,7 +47,7 @@ export default {
     // { src: '@/plugins/wc-plugin.js', ssr: false },
     { src: '@/plugins/env.js', ssr: false },
     { src: '@/plugins/auth-token.js', ssr: false },
-    { src: '@/plugins/bootstrap.js', ssr: false }
+    // { src: '@/plugins/bootstrap.js', ssr: false }
 
   ],
 
@@ -73,7 +74,7 @@ export default {
     manifest: {
       lang: 'en',
       start_url: 'https://beta.juncture-digital.org/tools?standalone=true',
-      theme_color: '#5A162E'
+      theme_color: '#ff4136'
     }
   },
 

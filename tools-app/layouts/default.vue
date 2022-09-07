@@ -57,6 +57,12 @@ export default Vue.extend({
 })
 </script>
 
+<style>
+  body {
+    background-color: white;
+  }
+</style>
+
 <style scoped>
   .wrapper {
     padding: 56px 0;
