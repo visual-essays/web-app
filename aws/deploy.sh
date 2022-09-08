@@ -10,7 +10,7 @@ cd ../aws
 
 mkdir -p build
 rsync -va Dockerfile build
-rsync -va ../main.py ../creds.yaml build
+rsync -va ../main.py ../config.yaml build
 rsync -va ../tools-app/dist build/tools-app/
 
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT}.dkr.ecr.us-east-1.amazonaws.com
