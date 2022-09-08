@@ -1,3 +1,4 @@
 .venv
 venv
 creds.yaml
+config.yaml

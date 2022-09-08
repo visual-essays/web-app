@@ -3,7 +3,7 @@
 
 '''
 Flask app for Visual Essays site.
-Dependencies: bs4 Flask Flask-Cors html5lib PyYAML requests serverless_wsgi
+Dependencies: bs4 expiringdict Flask Flask-Cors html5lib PyYAML requests serverless_wsgi
 '''
 
 import logging
@@ -15,13 +15,13 @@ import os
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 from time import time as now
-from flask import Flask, Response, redirect, request, send_from_directory
+from flask import Flask, redirect, request, send_from_directory
 from flask_cors import CORS
 import argparse
 import yaml
-import base64
-
+from urllib.parse import urlencode
 from bs4 import BeautifulSoup
+from expiringdict import ExpiringDict
 
 import requests
 logging.getLogger('requests').setLevel(logging.WARNING)
@@ -37,12 +37,14 @@ try:
 except:
   pass
 
-CREDS = yaml.load(open(f'{SCRIPT_DIR}/creds.yaml', 'r').read(), Loader=yaml.FullLoader)
+CONFIG = yaml.load(open(f'{SCRIPT_DIR}/config.yaml', 'r').read(), Loader=yaml.FullLoader)
 
 API_ENDPOINT = 'https://api.juncture-digital.org'
 PREFIX = 'visual-essays/content' # Prefix for site content, typically Github username/repo
 REF = ''                         # Github ref (branch)
 LOCAL_CONTENT_ROOT = None
+
+SEARCH_CACHE = ExpiringDict(max_len=1000, max_age_seconds=24 * 60 * 60)
 
 def _add_link(soup, href, attrs=None):
   link = soup.new_tag('link')
@@ -160,17 +162,15 @@ def render_app(path=None):
 
 @app.route('/search')
 def search():
-  args = {**{
-      'key': CREDS['GOOGLE_API_KEY'],
-      'cx': '568011e472c1ffe27'
-    }, 
-    **dict(request.args)
-  }
-  '''
-  url = f'https://www.googleapis.com/customsearch/v1?{urlencode(args)}'
-  return requests.get(url).json()
-  '''
-  return {}
+  qargs = dict([(k, request.args.get(k)) for k in request.args])
+  if 'domain' in qargs and qargs['domain'] in CONFIG['google_search']:
+    args = {**CONFIG['google_search'][qargs['domain']], **dict(request.args)}
+    url = f'https://www.googleapis.com/customsearch/v1?{urlencode(args)}'
+    if url not in SEARCH_CACHE:
+      SEARCH_CACHE[url] = requests.get(url).json()
+    return SEARCH_CACHE[url]
+  else:
+    return [], 404
 
 if __name__ == '__main__':
   logger.setLevel(logging.INFO)
