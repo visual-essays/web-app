@@ -203,10 +203,10 @@ h1 {margin-bottom: 32px;}
   max-width: 60%;
   margin: auto;
   font-family: Georgia;
+  hyphens: unset;
 }
 
 .cta {
-  width: 300px;
   background-color: #FFE55A;
   border-radius: 50px;
   font-family: Roboto;

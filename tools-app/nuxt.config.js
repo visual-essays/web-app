@@ -47,7 +47,7 @@ export default {
     // { src: '@/plugins/wc-plugin.js', ssr: false },
     { src: '@/plugins/env.js', ssr: false },
     { src: '@/plugins/auth-token.js', ssr: false },
-    // { src: '@/plugins/bootstrap.js', ssr: false }
+    { src: '@/plugins/bootstrap.js', ssr: false }
 
   ],
 
