@@ -51,14 +51,12 @@ section.footnote {
 
 /* Used for placing left vertical bar on active paragraphs */
 p {
-  /* border-left: 8px solid transparent; */
+  border-left: 8px solid transparent;
 }
 .ve-component.sticky + p.active, .ve-component.sticky ~ p.active,
 .ve-component.sticky + section p.active, .ve-component.sticky ~ section p.active {
-  /*
   border-left: 4px solid #ccc;
   padding-left: 4px;
-  */
 }
 
 ve-header ul,
@@ -377,7 +375,6 @@ mark:hover {
 }
 mark::after {
   font-weight: 900; 
-  content: "🔎";
   font-size: 75%;
   line-height: 0;
   position: relative;
@@ -385,6 +382,14 @@ mark::after {
   top: -0.5em;
   padding-left: 2px;
   padding-right: 4px;
+}
+
+mark.zoom::after {
+  content: "🔎";
+}
+
+mark.play::after {
+  content: "▶";
 }
 
 a { color: #0645ad; text-decoration:none;}
