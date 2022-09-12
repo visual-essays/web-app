@@ -21,7 +21,8 @@ export default {
       { name: 'theme-color', content: '#014473' },
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      { rel: 'icon', type: 'image/svg+xml', href: 'https://visual-essays.github.io/web-app/static/images/favicon.svg' },
+      { rel: 'icon', type: 'image/x-icon', href: 'https://visual-essays.github.io/web-app/static/images/favicon.ico' },
       // { rel: 'stylesheet', href: 'https://unpkg.com/visual-essays@0.2.53/dist/visual-essays/visual-essays.css' }
       { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css' }
     ],
