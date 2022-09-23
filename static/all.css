@@ -26,6 +26,10 @@ body {
   background-color: white;
 }
 
+ve-header.sticky + section{
+  margin-top: 24px;
+}
+
 /*
 Provide anchor offset for fixed headed
 Source - https://www.wikitechy.com/tutorials/javascript/offsetting-an-html-anchor-to-adjust-for-fixed-header
@@ -178,13 +182,13 @@ h1 {margin-bottom: 32px;}
 .card-abstract{  /* abstract */
   grid-area: 4 / 1 / 5 / 2;
   align-self: flex-end;
-  height: 110px;
+  min-height: 110px;
   line-height: 1.4;
   font-size: 0.9em;
   padding: .5rem .5rem 0 .5rem;
   overflow: hidden;
   display: -webkit-box;
-  /* -webkit-line-clamp: 5; */
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   margin: 0 0 .5rem 0;
 }
@@ -262,7 +266,7 @@ h1 {margin-bottom: 32px;}
   }
 
   ve-footer {
-    background-color: #eee;
+    /* background-color: #eee; */
   }
 
   ve-image,

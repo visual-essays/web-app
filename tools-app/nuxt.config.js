@@ -17,8 +17,7 @@ export default {
       { hid: 'description', name: 'description', content: '' },
       { name: 'format-detection', content: 'telephone=no' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-      //{ name: 'theme-color', content: '#5A162E' },
-      { name: 'theme-color', content: '#014473' },
+      { name: 'theme-color', content: '#5A162E' },
     ],
     link: [
       { rel: 'icon', type: 'image/svg+xml', href: 'https://visual-essays.github.io/web-app/static/images/favicon.svg' },
@@ -75,7 +74,7 @@ export default {
     manifest: {
       lang: 'en',
       start_url: 'https://beta.juncture-digital.org/tools?standalone=true',
-      theme_color: '#ff4136'
+      theme_color: '#5A162E'
     }
   },
 
