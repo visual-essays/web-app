@@ -2,3 +2,4 @@
 venv
 creds.yaml
 config.yaml
+.DS_Store

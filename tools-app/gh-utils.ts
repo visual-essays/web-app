@@ -76,7 +76,8 @@ export class GithubClient {
     let url = `https://api.github.com/repos/${acct}/${repo}/contents/${path}`
     sha = sha || await this.getSha(acct, repo, path, ref)
     console.log(`putFile: acct=${acct} repo=${repo} path=${path} ref=${ref} sha=${sha}`)
-    let payload:any = { message: 'API commit', content: btoa(unescape(encodeURIComponent(content))) }
+    // let payload:any = { message: 'API commit', content: btoa(unescape(encodeURIComponent(content))) }
+    let payload:any = { message: 'API commit', content: btoa(content) }
     if (ref) payload.branch = ref
     if (sha) payload.sha = sha
     let resp = await fetch(url, { method: 'PUT', body: JSON.stringify(payload), headers: {Authorization: `Token ${this.authToken}`} })

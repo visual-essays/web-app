@@ -23,7 +23,9 @@
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
     </b-navbar>
 
-    <Nuxt />
+
+        <Nuxt />
+
 
     <github-file-selector id="essays-file-selector"></github-file-selector>
     <github-file-selector id="media-file-selector" folders-only></github-file-selector>
@@ -57,15 +59,20 @@ export default Vue.extend({
 })
 </script>
 
-<style>
-  body {
-    background-color: white;
-  }
-</style>
-
 <style scoped>
+
+  #top-navbar {
+    height: 100px;
+    padding-top: 50px;
+  }
+  .navbar-brand {
+    font-size: 2rem;;
+  }
   .wrapper {
-    padding: 56px 0;
+    height: 100vh;
+    padding: 100px 0 58px 0;
+    background-color: white;
+    opacity: 1;
   }
   .navbar-toggler {
     margin-left: auto;

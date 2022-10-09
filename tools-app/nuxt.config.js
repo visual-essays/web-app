@@ -13,9 +13,10 @@ export default {
     title: 'Juncture Tools',
     meta: [
       { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
       { hid: 'description', name: 'description', content: '' },
       { name: 'format-detection', content: 'telephone=no' },
+      { name: 'apple-apple-mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       { name: 'theme-color', content: '#5A162E' },
     ],
@@ -75,6 +76,9 @@ export default {
       lang: 'en',
       start_url: 'https://beta.juncture-digital.org/tools?standalone=true',
       theme_color: '#5A162E'
+    },
+    icon: {
+      source: 'static/icon.jpg'
     }
   },
 

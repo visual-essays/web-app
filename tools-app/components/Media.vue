@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="media">
 
     <content-path tool="media"></content-path>
 
@@ -8,10 +8,10 @@
     </b-button-group>
   
     <ve-image-grid as-cards >
-      <ul>
-        <li v-for="manifest, idx in manifests" :key="`grid-${idx}`" v-html="manifest"></li>
-      </ul>
-    </ve-image-grid>
+    <ul>
+      <li v-for="manifest, idx in manifests" :key="`grid-${idx}`" v-html="manifest"></li>
+    </ul>
+  </ve-image-grid>
 
     <b-button v-if="isLoggedIn" pill class="fab" variant="primary" v-b-modal.add-image>+</b-button>
     <add-image-dialog></add-image-dialog>
@@ -61,6 +61,7 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+
   [v-cloak] {
     display: none
   }
@@ -69,6 +70,12 @@ export default Vue.extend({
     box-sizing: border-box;
   }
   
+  #media {
+    border: 1px solid red;
+    height: 100%;
+    margin: 1px;
+  }
+
   body {
     margin: 12px;
     font-family: Roboto, sans-serif;
