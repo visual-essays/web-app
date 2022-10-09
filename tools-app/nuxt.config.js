@@ -78,7 +78,9 @@ export default {
       theme_color: '#5A162E'
     },
     icon: {
-      source: 'static/icon.jpg'
+      source: 'static/icon.jpg',
+      // targetDir: '../static/icons',
+      // cacheDir: '../static/icons'
     }
   },
 
