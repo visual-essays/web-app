@@ -29,6 +29,8 @@
 <script lang="ts">
 
 import Vue from 'vue'
+import { BootstrapVue } from 'bootstrap-vue'
+Vue.use(BootstrapVue)
 
 import { faCircleQuestion, faCopy, faEye, faFloppyDisk, faFolderOpen }  from '@fortawesome/free-regular-svg-icons'
 import { faArrowUpRightFromSquare, faLink }  from '@fortawesome/free-solid-svg-icons'

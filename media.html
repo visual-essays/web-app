@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <link href="https://visual-essays.github.io/web-app/static/images/favicon.svg" rel="icon" type="image/svg+xml"/>
+  <link href="https://visual-essays.github.io/web-app/static/images/favicon.png" rel="icon" type="image/png"/>
+  <title>Juncture: Media Tool</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet" />
+  <!-- <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" /> -->
+  <link href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" type="text/css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://unpkg.com/visual-essays/dist/visual-essays/visual-essays.css" rel="stylesheet"/>
+  <link href="/manifest.json" rel="manifest"/>
+
+  <style>
+    body {
+      max-width: 1000px;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app">
+    <ve-header
+      background="#5B152E"
+      logo="https://raw.githubusercontent.com/visual-essays/media/main/images/Juncture_Logo.png"
+      contact="Ron.Snyder@ithaka.org"
+      sticky
+    >
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/editor">Editor</a></li>
+        <li><a href="/media">Media tool</a></li>
+        <li><a href="/contact">Contact us</a></li>
+        <li>auth</li>
+      </ul>
+    </ve-header>
+
+    <ve-content-path ref="path" content-path="gh:kent-map/images/canterbury?ref=main" mode="media" sticky="true"></ve-content-path>
+
+    <ve-image-grid as-cards>
+      <ul>
+        <li v-for="manifest, idx in manifests" :key="`grid-${idx}`" v-html="manifest"></li>
+      </ul>
+    </ve-image-grid>
+
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+  <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+  <!-- <script src="https://unpkg.com/visual-essays/dist/visual-essays/visual-essays.esm.js" type="module"></script> -->
+  <script src="http://localhost:3333/build/visual-essays.esm.js" type="module"></script>
+
+  <script type="module">
+    
+    const iiifServer = 'https://iiif.juncture-digital.org'
+
+    const fileExtensions = new Set(['yaml','jpg','jpeg','jp2','png','tif','tiff'])
+    const ignore = new Set(['iiif-props.yaml', 'iiif-props.template.yaml'])
+
+  new Vue({
+    el: '#app',
+    data: () => ({
+      ghAuthToken: null,
+      dirList: [],
+      userCanUpdate: false
+    }),
+    computed: {
+      isLoggedIn() { return this.ghAuthToken !== null },
+      manifests() { return Array.from(new Set((this.dirList || [])
+        .filter(item => item.type === 'file')
+        .filter(item => !ignore.has(item.name))
+        .filter(item => fileExtensions.has(item.name.split('.').pop().toLowerCase()))
+        .map(item => `${iiifServer}/gh:${item.root}/${encodeURIComponent(item.name.split('.').slice(0,-1).join('.'))}/manifest.json`)))
+      },
+  
+    },
+    created() {
+      this.ghAuthToken = localStorage.getItem('gh-auth-token')
+      window.addEventListener('storage', (evt) => { this.ghAuthToken = localStorage.getItem('gh-auth-token') })
+    },
+    mounted() {
+      this.$refs.path.addEventListener('contentPathChanged', async (evt) => {
+        let contentPath = evt.detail
+        let root = contentPath.split(':').pop().split('?')[0]
+        this.userCanUpdate = await this.$refs.path.repositoryIsWriteable()
+        console.log(`userCanUpdate=${this.userCanUpdate}`)
+        this.dirList = (await this.$refs.path.getDirList()).map(item => {item.root = root; return item})
+      })
+    },
+    methods: {},
+    watch: {}
+  })
+  Vue.config.productionTip = false
+  Vue.config.devtools = true
+
+  </script>
+
+</body>
+</html>

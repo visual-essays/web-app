@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <link href="https://visual-essays.github.io/web-app/static/images/favicon.svg" rel="icon" type="image/svg+xml"/>
+  <link href="https://visual-essays.github.io/web-app/static/images/favicon.png" rel="icon" type="image/png"/>
+  <title>Juncture: Editor</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css" rel="stylesheet"/>
+  <link href="/manifest.json" rel="manifest"/>
+
+  <style>
+    [v-cloak] {display: none}
+    * {box-sizing: border-box;}
+    body {max-width:1000px; margin: auto !important;}
+    #editor {display:grid; grid-template-rows: auto auto 1fr; height: 100vh;}
+    #mde {font-family:Roboto,sans-serif; height:100%; overflow-y: hidden;}
+    .EasyMDEContainer {height:calc(100%);}
+    .EasyMDEContainer .CodeMirror {height:calc(100% - 75px);}
+    .preview .EasyMDEContainer .CodeMirror {height:calc(100% - 60px);}
+    .editor-preview {padding:0; background-color:white;}
+    .preview .editor-statusbar {display:none;}
+    .cm-ve-tag {color:red;}
+  </style>
+</head>
+<body>
+
+  <div v-cloak id="editor">
+  
+    <ve-header
+      background="#5B152E"
+      logo="https://raw.githubusercontent.com/visual-essays/media/main/images/Juncture_Logo.png"
+      contact="Ron.Snyder@ithaka.org"
+      
+    >
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/editor">Editor</a></li>
+        <li><a href="/media">Media tool</a></li>
+        <li><a href="/contact">Contact us</a></li>
+        <li>auth</li>
+      </ul>
+    </ve-header>
+
+    <ve-content-path ref="contentSelector" :content-path="contentPath" sticky="true"></ve-content-path>
+
+    <div id="mde" @drop.prevent="drop" @dragover.prevent @dragover="overDropzone=true" @dragleave="overDropzone=false" :class="{overDropzone}">
+      <textarea v-cloak ref="content"></textarea>
+    </div>
+  
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <script src="https://codemirror.net/5/lib/codemirror.js"></script>
+  <script>
+    let addEl = (args) => {
+      let el = document.createElement(args.tag)
+      Object.keys(args).filter(key => key !== 'tag').forEach(key => el[key] = args[key])
+      document.getElementsByTagName(args.tag === 'script' ? 'body' : 'head')[0].appendChild(el)
+      return el
+    }
+    const isDev = window.location.hostname == 'localhost'
+    const apiEndpoint = isDev ? 'http://localhost:8000' : 'https://api.juncture-digital.org'
+    const wcEndpoint = isDev ? 'http://localhost:3333/build' : 'https://unpkg.com/visual-essays/dist/visual-essays'
+    addEl({tag: 'link', rel: 'stylesheet', type: 'text/css', href: `${wcEndpoint}/visual-essays.css`})
+    addEl({tag: 'script', type: 'module', src: `${wcEndpoint}/visual-essays.esm.js`})
+  </script>
+  <script type="module">
+    
+    new Vue({
+    el: '#editor',
+    data: () => ({
+      contentPath: '',
+      ghAuthToken: null,
+      acct: null,
+      repo: null,
+      easyMDE: null,
+      overDropzone: false,
+      isPreviewActive: true,
+      loadedDependencies: []
+    }),
+    computed: {
+      isLoggedIn() { return this.ghAuthToken !== null }
+    },
+    created() {
+      this.ghAuthToken = localStorage.getItem('gh-auth-token')
+      window.addEventListener('storage', (evt) => { this.ghAuthToken = localStorage.getItem('gh-auth-token') })
+    },
+    mounted() {
+      this.$refs.contentSelector.addEventListener('contentPathChanged', async (evt) => this.parseContentPath(evt.detail))
+      this.contentPath = window.location.href.slice(window.origin.length+1).replace(/^editor\//,'')
+      this.initEditor()
+    },
+    methods: {
+
+      async parseContentPath(path) {
+        let [source, contentSpec] = path.split(':')
+        let [contentPath, argsStr] = contentSpec.split('?');
+        [this.acct, this.repo] = contentPath.split('/')
+        let filePath = contentPath.split('/').slice(2).join('/')
+        this.userCanUpdate = await this.$refs.contentSelector.repositoryIsWriteable()
+        if (filePath.indexOf('.md') === filePath.length-3) this.easyMDE.value((await this.$refs.contentSelector.getFile(filePath)).content)
+        console.log(`acct=${this.acct} repo=${this.repo} contentPath=${contentPath} filePath=${filePath} writeable=${this.userCanUpdate}`)
+        window.history.replaceState({}, null, `/${contentSpec}`)
+      },
+
+      initEditor() {
+
+        CodeMirror.defineMode('ve-tag', () => {
+          return {
+            token: function (stream, state) {
+              if (stream.match(/\.ve\-\S+/)) {
+                return 've-tag'
+                /*
+                let ch
+                while ((ch = stream.next()) != null)
+                  if (stream.next() == ' ') {
+                    // stream.eat(' ')
+                    return 've-tag'
+                  }
+                  return 've-tag'
+                */
+              } else {
+                stream.next()
+                return null
+              }
+            }
+          }
+        })
+
+        this.easyMDE = new EasyMDE({
+          previewRender: this.togglePreview,
+          hideIcons: ['side-by-side', 'fullscreen', 'guide'],
+          spellChecker: false,
+          overlayMode: {
+            mode: CodeMirror.getMode({}, 've-tag'),
+            combine: false,
+          }
+        })
+        /*
+        this.simplemde.codemirror.on('drop', (_, evt) => evt.preventDefault())
+        // this.simplemde.codemirror.on('change', _.debounce(() => this.saveFile(), 10000))
+        this.simplemde.codemirror.on('drop', (_, evt) => evt.preventDefault())
+        this.fileTitle = this.fileTitle || localStorage.getItem(`${this.userHash}/file-title`) || 'default'
+        */
+      },
+
+      copyLink() {
+        navigator.clipboard.writeText(this.fileLinkShort)
+      },
+
+      copyText() {
+        navigator.clipboard.writeText(this.simplemde.value())
+      },
+
+      launch() {
+        window.open(this.fileLinkShort, '_blank')
+      },
+
+      togglePreview(markdown, preview) {
+        this.isPreviewActive = !this.isPreviewActive
+        return this.previewRender(markdown, preview)
+      },
+
+      showHelp() {
+        this.openWindow(`${webappHost}/a3b5125/help/`, `toolbar=no,location=no,left=0,top=0,width=800,height=800,scrollbars=no,status=no`)
+      },
+
+      openWindow(url, options) {
+        if (this.externalWindow) { this.externalWindow.close() }
+        if (options === undefined) options = 'toolbar=yes,location=yes,left=0,top=0,width=1000,height=1200,scrollbars=yes,status=yes'
+        this.externalWindow = window.open(url, '_blank', options)
+      },
+
+      saveFile() {
+        console.log('saveFile')
+      },
+
+      previewRender(markdown, preview) {
+        if (this.isPreviewActive) {
+          this.loadedDependencies.forEach(el => el.parentElement.removeChild(el))
+          this.loadedDependencies = []
+        } else {
+          let body = {'prefix': `${this.acct}/${this.repo}`, 'markdown': markdown}
+          fetch(`${apiEndpoint}/html/?inline=true`, {method: 'POST', body: JSON.stringify(body)})
+            .then(resp => resp.text())
+            .then(html => {
+              let htmlEls = new DOMParser().parseFromString(html, 'text/html').children[0].children
+              let head = htmlEls[0]
+              let body = htmlEls[1]
+              // Array.from(body.querySelectorAll('ve-image')).forEach(veImg => veImg.setAttribute('auth-token', this.authToken))
+              preview.innerHTML = body.innerHTML
+              this.loadDependencies(head.querySelectorAll('link[rel="stylesheet"]'), 0, () => this.loadDependencies(head.querySelectorAll('style'), 0, null))
+              this.loadDependencies(body.querySelectorAll('script'), 0, null)
+            })
+          return ''
+        }
+      },
+
+      loadDependencies(dependencies, i, callback) {
+        if (dependencies.length > 0) {
+          this.load(dependencies.item(i), () => {
+            if (i < dependencies.length-1) this.loadDependencies(dependencies, i+1, callback) 
+            else if (callback) callback()
+          })
+        }
+      },
+  
+      loadNew(srcEl, callback) {
+        if (srcEl.localName  === 'link') {
+          let e = addEl({tag: 'link', rel: srcEl.rel, type: 'text/css',  href: srcEl.href.replace(/https:\/\/unpkg\.com\/visual-essays\/dist\/visual-essays/, wcEndpoint)})
+          e.addEventListener('load', callback)
+          this.loadedDependencies.push(e)
+        } else if (srcEl.localName  === 'style') {
+          let e = addEl({tag: 'style', type: 'text/css', textContent: srcEl.textContent})
+          e.addEventListener('load', callback)
+          this.loadedDependencies.push(e)
+        } else if (srcEl.localName  === 'script') {
+          let elArgs = {tag: 'script'}
+          if (srcEl.type) elArgs.type = srcEl.type
+          if (srcEl.src) elArgs.src = srcEl.src.replace(/https:\/\/unpkg\.com\/visual-essays\/dist\/visual-essays/, wcEndpoint)
+          else elArgs.text = srcEl.text
+          let e = addEl(elArgs)
+          this.loadedDependencies.push(e)
+          if (!e.src) callback()
+        }
+      },
+
+      load(srcEl, callback) {
+        const wcDevEndpoint = 'http://localhost:3333/build'
+        let e
+        if (srcEl.localName  === 'link') {
+          e = document.createElement('link')
+          e.href = isDev
+            ? srcEl.href.replace(/https:\/\/unpkg\.com\/visual-essays\/dist\/visual-essays/, wcDevEndpoint)
+            : srcEl.href
+          e.rel = srcEl.rel
+          e.type = 'text/css'
+          e.addEventListener('load', callback)
+          this.loadedDependencies.push(e)
+          document.getElementsByTagName('head')[0].appendChild(e)
+        } else if (srcEl.localName  === 'style') {
+          e = document.createElement('style')
+          e.textContent = srcEl.textContent
+          e.addEventListener('load', callback)
+          this.loadedDependencies.push(e)
+          document.getElementsByTagName('head')[0].appendChild(e)
+        } else if (srcEl.localName  === 'script') {
+          e = document.createElement('script')
+          if (srcEl.src) {
+            e.src = isDev
+              ? srcEl.src.replace(/https:\/\/unpkg\.com\/visual-essays\/dist\/visual-essays/, wcDevEndpoint)
+              : srcEl.src
+            if (srcEl.type) e.type = srcEl.type
+            e.addEventListener('load', callback)
+          } else {
+            if (srcEl.type) e.type = srcEl.type
+            e.text = srcEl.text
+          }
+          this.loadedDependencies.push(e)
+          document.getElementsByTagName('body')[0].appendChild(e)
+          if (!e.src) callback()
+        }
+      },
+
+    },
+    watch: {}
+  })
+  Vue.config.productionTip = false
+  Vue.config.devtools = true
+
+  </script>
+
+</body>
+</html>

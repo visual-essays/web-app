@@ -23,9 +23,7 @@
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
     </b-navbar>
 
-
-        <Nuxt />
-
+    <Nuxt />
 
     <github-file-selector id="essays-file-selector"></github-file-selector>
     <github-file-selector id="media-file-selector" folders-only></github-file-selector>

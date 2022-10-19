@@ -26,8 +26,7 @@ from expiringdict import ExpiringDict
 import requests
 logging.getLogger('requests').setLevel(logging.WARNING)
 
-# app = Flask(__name__, static_url_path='/_nuxt', static_folder='dist/_nuxt')
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static', static_folder='static')
 CORS(app)
 
 try:
@@ -40,11 +39,12 @@ except:
 CONFIG = yaml.load(open(f'{SCRIPT_DIR}/config.yaml', 'r').read(), Loader=yaml.FullLoader)
 
 API_ENDPOINT = 'https://api.juncture-digital.org'
-PREFIX = 'visual-essays/content' # Prefix for site content, typically Github username/repo
+PREFIX = 'visual-essays/essays' # Prefix for site content, typically Github username/repo
 REF = ''                         # Github ref (branch)
 LOCAL_CONTENT_ROOT = None
 
 SEARCH_CACHE = ExpiringDict(max_len=1000, max_age_seconds=24 * 60 * 60)
+TOOL_CACHE = ExpiringDict(max_len=1000, max_age_seconds=24 * 60 * 60)
 
 def _add_link(soup, href, attrs=None):
   link = soup.new_tag('link')
@@ -69,6 +69,9 @@ def _set_style(soup):
   # Add custom stylesheet
   # _add_link(soup, '/static/css/custom.css', {'rel': 'stylesheet'})
 
+def _make_pwa(soup):
+  _add_link(soup, '/manifest.json', {'rel':'manifest'})
+  
 def _customize_response(html):
   '''Perform any post-processing of API-generated HTML.'''
   # parse API-generated HTML with BeautifulSoup
@@ -77,6 +80,7 @@ def _customize_response(html):
   # perform custom updates to api-generated html
   # _set_favicon(soup)
   # _set_style(soup)
+  _make_pwa(soup)
   return str(soup)
 
 def _get_local_content(path):
@@ -88,7 +92,8 @@ def _get_local_content(path):
       return open(_path, 'r').read()
   logger.warn(f'Local content not found: path={path}')
 
-def _get_html(path, base_url, ref=REF, **kwargs):
+def _get_html(path, base_url, ref=REF, host=None, **kwargs):
+  logger.info(f'API_ENDPOINT={API_ENDPOINT} host={host}')
   html = ''
   status_code = 404
   if LOCAL_CONTENT_ROOT:
@@ -102,8 +107,8 @@ def _get_html(path, base_url, ref=REF, **kwargs):
     if ref: api_url += f'&ref={ref}'
     resp = requests.get(api_url)
     status_code, html =  resp.status_code, resp.text if resp.status_code == 200 else ''
-  if status_code == 200 and 'localhost' in API_ENDPOINT:
-    html = html.replace('https://unpkg.com/visual-essays/dist/visual-essays','http://localhost:3333/build')
+  if status_code == 200 and 'api.juncture-digital.org' not in API_ENDPOINT:
+    html = html.replace('https://unpkg.com/visual-essays/dist/visual-essays', f'http://{host.split(":")[0]}:3333/build')
   return status_code, html
 
 @app.route('/favicon.ico')
@@ -118,6 +123,10 @@ def robots_txt():
 def sitemap_txt():
   return send_from_directory(os.path.join(app.root_path, 'static'), 'sitemap.txt', mimetype='text/plain')
 
+@app.route('/manifest.json')
+def pwa_manifest():
+  return send_from_directory(os.path.join(app.root_path), 'manifest.json', mimetype='application/json')
+
 @app.route('/<path:path>')
 @app.route('/<path:path>/')
 @app.route('/')
@@ -129,36 +138,37 @@ def render_html(path=None):
   if base_url != '/' and not base_url.endswith('/'): base_url += '/'
   path = f'/{path}' if path else '/'
   logger.info(f'render: path={path} base_url={base_url} qargs={qargs}')
-  status, html = _get_html(path, base_url, **qargs)
+  status, html = _get_html(path, base_url, host=request.host, **qargs)
   if status == 200:
     html = _customize_response(html)
   logger.debug(f'render: api_endpoint={API_ENDPOINT} base_url={base_url} \
   prefix={PREFIX} path={path} status={status} elapsed={round(now()-start, 3)}')
   return html, status
 
-@app.route('/_nuxt/<path:path>')
-def nuxt_assets(path):
-  path_elems = [pe for pe in path.split('/') if pe]
-  dir = '/'.join([app.root_path, 'tools-app', 'dist', '_nuxt'] + path_elems[0:-1])
-  file = path_elems[-1]
-  logger.info(f'dir={dir} file={file}')
-  extension = file.split('.')[-1]
-  if extension in ('png','jpg','jpeg'):
-    # return Response(base64.b64encode(open(f'{dir}/{file}', 'rb').read()), mimetype=f'image/{extension.replace("jpg","jpeg")}')
-    return redirect(f'https://visual-essays.github.io/web-app/static/icons/{file}')
-  else:
-    return send_from_directory(dir, file)
-
+@app.route('/annotator/<path:path>')
+@app.route('/editor/<path:path>')
 @app.route('/media/<path:path>')
-@app.route('/essays/<path:path>')
+@app.route('/annotator/')
+@app.route('/editor/')
 @app.route('/media/')
-@app.route('/essays/')
-@app.route('/tools/')
+@app.route('/annotator')
+@app.route('/editor')
 @app.route('/media')
-@app.route('/essays')
-@app.route('/tools')
 def render_app(path=None):
-  return send_from_directory(os.path.join(app.root_path, 'tools-app', 'dist'), '404.html')
+  qargs = dict([(k, request.args.get(k)) for k in request.args])
+  refresh = qargs.get('refresh','false').lower() in ('true', '')
+  host = request.host.split(':')[0]
+  tool = request.path.split('/')[1]
+  logger.info(f'host={host} tool={tool} path={path} refresh={refresh}')
+  if tool not in TOOL_CACHE or refresh:
+    if host == 'localhost':
+      return open(f'{app.root_path}/../tools/{tool}.html', 'r').read()
+    else:
+      resp = requests.get(f'https://raw.githubusercontent.com/visual-essays/tools/main/{tool}.html')
+      if resp.status_code == 200:
+        TOOL_CACHE[tool] = resp.text
+      else: return '', resp.status_code
+  return TOOL_CACHE[tool]
 
 @app.route('/search')
 def search():

@@ -17,8 +17,9 @@ RUN python3 -m pip install awslambdaric
 
 RUN set -e; pip install bs4 expiringdict Flask Flask-Cors html5lib PyYAML requests serverless_wsgi
 
-COPY main.py config.yaml ./
-COPY tools-app ./tools-app
+COPY main.py config.yaml manifest.json ./
+COPY static ./static
+# COPY tools-app ./tools-app
 
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 CMD ["main.handler"]
