@@ -42,7 +42,7 @@
       </ul>
     </ve-header>
 
-    <ve-content-path ref="contentSelector" :content-path="contentPath" sticky="true"></ve-content-path>
+    <ve-content-selector ref="contentSelector" :content-path="contentPath" sticky="true"></ve-content-selector>
 
     <div id="mde" @drop.prevent="drop" @dragover.prevent @dragover="overDropzone=true" @dragleave="overDropzone=false" :class="{overDropzone}">
       <textarea v-cloak ref="content"></textarea>

@@ -3,7 +3,7 @@
 
     <div class="controls">
       
-      <content-path></content-path>
+      <content-selector></content-selector>
 
       <div class="buttons">
         <span @click="showHelp" v-b-tooltip.hover :title="isMobile ? '' : 'Show Help Documentation'"><fa :icon="helpIcon"></fa></span>
