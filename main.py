@@ -43,6 +43,10 @@ PREFIX = 'visual-essays/essays' # Prefix for site content, typically Github user
 REF = ''                         # Github ref (branch)
 LOCAL_CONTENT_ROOT = None
 
+# visual-essays web components version
+STABLE = '0.3'
+BETA = '0.4'
+
 SEARCH_CACHE = ExpiringDict(max_len=1000, max_age_seconds=24 * 60 * 60)
 TOOL_CACHE = ExpiringDict(max_len=1000, max_age_seconds=24 * 60 * 60)
 
@@ -107,8 +111,16 @@ def _get_html(path, base_url, ref=REF, host=None, **kwargs):
     if ref: api_url += f'&ref={ref}'
     resp = requests.get(api_url)
     status_code, html =  resp.status_code, resp.text if resp.status_code == 200 else ''
-  if status_code == 200 and 'api.juncture-digital.org' not in API_ENDPOINT:
-    html = html.replace('https://unpkg.com/visual-essays/dist/visual-essays', f'http://{host.split(":")[0]}:3333/build')
+  if status_code == 200:
+    ve_wc_prefix = None
+    if host == 'beta.juncture-digital.org':
+      ve_wc_prefix = f'https://unpkg.com/visual-essays@{BETA}/dist/visual-essays'
+    elif host == 'juncture-digital.org':
+      ve_wc_prefix = f'https://unpkg.com/visual-essays@{STABLE}/dist/visual-essays'
+    elif 'api.juncture-digital.org' not in API_ENDPOINT:
+      ve_wc_prefix = f'http://{host.split(":")[0]}:3333/build'
+    if ve_wc_prefix:
+      html = html.replace('https://unpkg.com/visual-essays/dist/visual-essays', ve_wc_prefix)
   return status_code, html
 
 @app.route('/favicon.ico')
